@@ -18,7 +18,7 @@ GitHub Pages hosts the browser app. Public matchmaking and private rooms require
 
 1. In Render, choose **New → Blueprint** and connect this repository. Render reads `render.yaml` and creates the `sequence-multiplayer` web service.
 2. Wait for the service deployment to finish, then check `https://YOUR-SERVICE.onrender.com/health` for an `ok` response.
-3. Open the GitHub Pages app and enter `https://YOUR-SERVICE.onrender.com` in **Multiplayer server**. The address is saved in that browser. Friends can use the invite URL, which includes the room code and server address.
+3. Open the GitHub Pages app. It is preconfigured with `https://sequence-multiplayer.onrender.com`; the **Multiplayer server** field can be changed to use another deployment. Friends can use the invite URL, which includes the room code and server address.
 
 The free Render service may sleep when idle, so the first connection after inactivity can take a little longer. Room state is held in server memory; active rooms are not durable across service restarts.
 

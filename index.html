@@ -743,6 +743,7 @@
         { id: "team-2", name: "Blue Team", color: "#628dc2" },
         { id: "team-3", name: "Green Team", color: "#5c9b78" },
       ];
+      const DEFAULT_MULTIPLAYER_SERVER = "https://sequence-multiplayer.onrender.com";
 
       function sequenceGoalForPlayerCount(playerCount) {
         return playerCount >= 4 ? 2 : 1;
@@ -969,7 +970,9 @@
       }
 
       function currentServerUrl() {
-        const configured = elements.serverUrl.value.trim() || localStorage.getItem("sequence.serverUrl") || "";
+        const configured = elements.serverUrl.value.trim()
+          || localStorage.getItem("sequence.serverUrl")
+          || (location.hostname.endsWith("github.io") ? DEFAULT_MULTIPLAYER_SERVER : "");
         if (configured) {
           localStorage.setItem("sequence.serverUrl", configured);
           const url = new URL(configured);
@@ -1731,7 +1734,8 @@
           elements.onlineRoomError.textContent = "Could not copy the invite link. Copy the room code instead.";
         }
       });
-      elements.serverUrl.value = localStorage.getItem("sequence.serverUrl") ?? "";
+      elements.serverUrl.value = localStorage.getItem("sequence.serverUrl")
+        ?? (location.hostname.endsWith("github.io") ? DEFAULT_MULTIPLAYER_SERVER : "");
       elements.serverUrl.addEventListener("change", () => {
         const value = elements.serverUrl.value.trim();
         if (!value) localStorage.removeItem("sequence.serverUrl");
