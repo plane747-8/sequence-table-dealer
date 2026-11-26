@@ -166,14 +166,14 @@
     .mode-layout { width: min(940px, 100%); margin: 0 auto; padding: 45px 0 20px; }
     .mode-heading { margin-bottom: 24px; }
     .mode-heading h1 { margin-bottom: 10px; }
-    .mode-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .mode-card { display: flex; min-width: 0; flex-direction: column; border: 1px solid var(--line); border-top: 3px solid var(--team-color, var(--gold)); border-radius: 5px; padding: 19px; background: rgba(20,36,49,.92); }
     .mode-icon { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid color-mix(in srgb, var(--team-color, var(--gold)) 60%, transparent); border-radius: 50%; color: var(--team-color, var(--gold-bright)); font-size: 19px; }
     .mode-card h2 { margin: 14px 0 7px; font: 22px Georgia, serif; }
     .mode-card p { min-height: 50px; margin: 0 0 15px; color: #9eabad; font-size: 11px; line-height: 1.6; }
     .local-mode { --team-color: #75a68c; }
-    .online-mode { --team-color: #d3b36e; }
-    .invite-mode { --team-color: #7799c6; }
+    .private-mode { --team-color: #7799c6; }
+    .local-mode { --team-color: #75a68c; }
     .mode-label { margin: 0 0 5px; color: #c1cac6; font-size: 10px; }
     .mode-input { width: 100%; min-width: 0; height: 39px; margin-bottom: 11px; border: 1px solid rgba(220,226,218,.16); border-radius: 3px; padding: 0 10px; color: var(--ink); background: rgba(6,16,24,.4); font-size: 12px; }
     .mode-input::placeholder { color: #819092; }
@@ -181,7 +181,12 @@
     .mode-action { min-height: 44px; }
     .join-room-fields { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; margin-top: 10px; }
     .join-room-fields .mode-input { margin: 0; }
-    .join-room-fields .quiet-button { min-height: 39px; }
+    .private-room-options { display: grid; gap: 8px; margin-top: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .private-room-options h3 { margin: 0; font: 16px Georgia, serif; }
+    .private-room-options .mode-label { margin-top: 4px; }
+    .private-room-options .mode-input { margin-bottom: 0; }
+    .join-room-fields { grid-template-columns: minmax(0, 1fr); }
+    .join-room-fields .quiet-button { min-height: 44px; border-color: rgba(119,153,198,.6); color: #d9e7ff; background: rgba(119,153,198,.1); }
     .server-settings { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: center; gap: 3px 12px; margin-top: 19px; border-top: 1px solid var(--line); padding-top: 14px; }
     .server-settings label { color: #bdc5c2; font-size: 11px; font-weight: 700; }
     .server-settings .mode-input { margin: 0; }
@@ -345,45 +350,45 @@
       <div class="mode-layout">
         <div class="mode-heading">
           <div class="eyebrow">Choose your table</div>
-          <h1 id="mode-title">How are you playing?</h1>
-          <p class="intro">Stay around one device, find a public match, or invite friends to a private room.</p>
+          <h1 id="mode-title">Play with your people.</h1>
+          <p class="intro">Host a private room and invite friends, join someone else's room, or play locally around one device.</p>
         </div>
         <div class="mode-grid">
+          <article class="mode-card private-mode">
+            <div class="mode-icon" aria-hidden="true">↗</div>
+            <h2>Private room</h2>
+            <p>Play online with friends using a private invite link or room code.</p>
+            <label class="mode-label" for="private-player-name">Your name</label>
+            <input class="mode-input" id="private-player-name" type="text" maxlength="24" autocomplete="nickname" placeholder="Name at the table">
+            <div class="private-room-options">
+              <label class="mode-label" for="private-room-capacity">Players at your table</label>
+              <select class="mode-input" id="private-room-capacity">
+                <option value="2">2 players</option><option value="3">3 players</option><option value="4" selected>4 players</option>
+                <option value="6">6 players</option><option value="8">8 players</option><option value="9">9 players</option>
+                <option value="10">10 players</option><option value="11">11 players</option><option value="12">12 players</option>
+              </select>
+            </div>
+            <button type="button" class="primary-button mode-action" id="host-room-button">HOST A PRIVATE ROOM</button>
+            <div class="private-room-options">
+              <h3>Join a private room</h3>
+              <label class="mode-label" for="join-room-code">Enter your friend's room code</label>
+              <div class="join-room-fields">
+                <input class="mode-input" id="join-room-code" type="text" maxlength="6" autocomplete="off" placeholder="6-character room code" aria-label="Private room code">
+                <button type="button" class="quiet-button" id="join-room-button">JOIN PRIVATE ROOM</button>
+              </div>
+            </div>
+          </article>
           <article class="mode-card local-mode">
             <div class="mode-icon" aria-hidden="true">⌂</div>
             <h2>Local</h2>
             <p>Pass one device around the table. Private hands stay hidden between turns.</p>
             <button type="button" class="primary-button" id="local-mode-button">PLAY LOCALLY</button>
           </article>
-          <article class="mode-card online-mode">
-            <div class="mode-icon" aria-hidden="true">◎</div>
-            <h2>Public match</h2>
-            <p>Join a queue and get matched with players looking for the same table size. Your display name is visible to the match.</p>
-            <label class="mode-label" for="online-player-name">Your name</label>
-            <input class="mode-input" id="online-player-name" type="text" maxlength="24" autocomplete="nickname" placeholder="Name at the table">
-            <label class="mode-label" for="public-capacity">Players in this match</label>
-            <select class="mode-input" id="public-capacity">
-              <option value="2">2 players</option><option value="3">3 players</option><option value="4" selected>4 players</option>
-              <option value="6">6 players</option><option value="8">8 players</option><option value="9">9 players</option>
-              <option value="10">10 players</option><option value="11">11 players</option><option value="12">12 players</option>
-            </select>
-            <button type="button" class="secondary-button mode-action" id="public-mode-button">FIND A PUBLIC MATCH</button>
-          </article>
-          <article class="mode-card invite-mode">
-            <div class="mode-icon" aria-hidden="true">↗</div>
-            <h2>Private room</h2>
-            <p>Host a room and share an invite link, or join a friend's room code.</p>
-            <button type="button" class="secondary-button mode-action" id="host-room-button">HOST A PRIVATE ROOM</button>
-            <div class="join-room-fields">
-              <input class="mode-input" id="join-room-code" type="text" maxlength="6" autocomplete="off" placeholder="6-character room code" aria-label="Private room code">
-              <button type="button" class="quiet-button" id="join-room-button">JOIN</button>
-            </div>
-          </article>
         </div>
         <div class="server-settings">
           <label for="server-url">Multiplayer server</label>
           <input class="mode-input" id="server-url" type="url" placeholder="https://your-sequence-server.example">
-          <p>Local play works offline. Public matches and invite rooms need the Sequence server address.</p>
+          <p>Local play works offline. Private rooms need the Sequence server.</p>
         </div>
         <p class="mode-message" id="mode-message" role="alert"></p>
       </div>
@@ -597,8 +602,8 @@
       const elements = {
         modeScreen: byId("mode-screen"), setupScreen: byId("setup-screen"), teamsScreen: byId("teams-screen"),
         onlineLobbyScreen: byId("online-lobby-screen"), gameScreen: byId("game-screen"), playerList: byId("player-list"),
-        localModeButton: byId("local-mode-button"), publicModeButton: byId("public-mode-button"), hostRoomButton: byId("host-room-button"),
-        joinRoomButton: byId("join-room-button"), onlinePlayerName: byId("online-player-name"), publicCapacity: byId("public-capacity"),
+        localModeButton: byId("local-mode-button"), hostRoomButton: byId("host-room-button"),
+        joinRoomButton: byId("join-room-button"), privatePlayerName: byId("private-player-name"), privateRoomCapacity: byId("private-room-capacity"),
         joinRoomCode: byId("join-room-code"), serverUrl: byId("server-url"), modeMessage: byId("mode-message"),
         onlineLobbyType: byId("online-lobby-type"), onlineLobbyTitle: byId("online-lobby-title"), onlineLobbyInstruction: byId("online-lobby-instruction"),
         inviteCodePanel: byId("invite-code-panel"), inviteCode: byId("invite-code"), copyInviteButton: byId("copy-invite-button"),
@@ -994,10 +999,10 @@
       }
 
       function connectOnline(mode, options = {}) {
-        const name = normalizedOnlineName(elements.onlinePlayerName.value);
+        const name = normalizedOnlineName(elements.privatePlayerName.value);
         if (!name) {
           elements.modeMessage.textContent = "Enter your name before joining a match.";
-          elements.onlinePlayerName.focus();
+          elements.privatePlayerName.focus();
           return;
         }
         const url = currentServerUrl();
@@ -1017,17 +1022,15 @@
         elements.modeMessage.textContent = "Connecting to the Sequence server…";
         elements.onlineRoomError.textContent = "";
         setOnlineScreen("lobby");
-        elements.onlineLobbyTitle.textContent = mode === "public" ? "Finding your table" : mode === "host" ? "Creating private room" : "Joining private room";
-        elements.onlineLobbyType.textContent = mode === "public" ? "Public match" : "Private table";
+        elements.onlineLobbyTitle.textContent = mode === "host" ? "Creating private room" : "Joining private room";
+        elements.onlineLobbyType.textContent = "Private table";
         elements.onlineLobbyInstruction.textContent = "Connecting securely to the multiplayer server.";
         onlineSocket = new WebSocket(url);
         const storedToken = options.code ? localStorage.getItem(`sequence.player.${options.code}`) : null;
         onlineSocket.addEventListener("open", () => {
           elements.modeMessage.textContent = "";
-          if (mode === "public") {
-            onlineSocket.send(JSON.stringify({ type: "joinPublic", name, capacity: Number(elements.publicCapacity.value) }));
-          } else if (mode === "host") {
-            onlineSocket.send(JSON.stringify({ type: "createPrivate", name, capacity: Number(elements.publicCapacity.value) }));
+          if (mode === "host") {
+            onlineSocket.send(JSON.stringify({ type: "createPrivate", name, capacity: Number(elements.privateRoomCapacity.value) }));
           } else {
             onlineSocket.send(JSON.stringify({ type: "joinRoom", name, code: options.code, playerToken: storedToken }));
           }
@@ -1067,14 +1070,6 @@
           onlineIdentity = message;
           localStorage.setItem(`sequence.player.${message.roomCode}`, message.playerToken);
           elements.inviteCode.textContent = message.roomCode;
-          return;
-        }
-        if (message.type === "queueStatus") {
-          elements.onlineLobbyTitle.textContent = "Looking for players";
-          elements.onlineLobbyType.textContent = "Public match";
-          elements.onlineLobbyInstruction.textContent = `You are in the ${message.capacity}-player queue. Waiting for ${message.needed} more ${message.needed === 1 ? "player" : "players"}.`;
-          elements.onlinePlayerCount.textContent = `${message.waiting} / ${message.capacity}`;
-          elements.onlinePlayerList.replaceChildren();
           return;
         }
         if (message.type !== "state") return;
@@ -1710,7 +1705,6 @@
         elements.setupError.textContent = "";
         setOnlineScreen("local-setup");
       });
-      elements.publicModeButton.addEventListener("click", () => connectOnline("public"));
       elements.hostRoomButton.addEventListener("click", () => connectOnline("host"));
       elements.joinRoomButton.addEventListener("click", () => {
         const code = elements.joinRoomCode.value.trim().toUpperCase();
