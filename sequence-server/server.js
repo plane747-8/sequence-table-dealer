@@ -224,7 +224,7 @@ function stateFor(room, player) {
     winnerTeamId: room.winnerTeamId,
     deckCount: room.deck.length,
     discardCount: room.discard.length,
-    hand: room.phase === "playing" && room.activePlayerId === player.id ? player.hand.map((card) => ({ ...card })) : [],
+    hand: ["playing", "paused", "won"].includes(room.phase) ? player.hand.map((card) => ({ ...card })) : [],
     isHost: player.id === room.hostId,
     canStart: player.id === room.hostId && room.phase === "lobby" && room.players.length >= 2,
   };

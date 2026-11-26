@@ -104,7 +104,15 @@
     .turn-label { margin: 0 0 8px; color: var(--gold); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
     .player-name { margin: 0 0 5px; font: 31px Georgia, serif; text-align: center; }
     .turn-hint { max-width: 390px; min-height: 21px; margin: 0 0 22px; color: #aab5b4; font-size: 13px; line-height: 1.55; text-align: center; }
-    .card-slot { display: grid; width: 226px; height: 318px; place-items: center; }
+    .card-slot { display: grid; width: min(560px, 100%); min-height: 120px; place-items: center; }
+    .hand-cards { display: grid; width: 100%; grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); gap: 8px; justify-items: center; }
+    .hand-card { display: flex; width: 100%; max-width: 82px; min-width: 0; aspect-ratio: .72; flex-direction: column; justify-content: space-between; border: 1px solid #d6d4ce; border-radius: 6px; padding: 7px; color: #202630; background: linear-gradient(145deg, #fff, #f8f6f0); box-shadow: 0 5px 13px rgba(0,0,0,.2); cursor: pointer; transition: transform .14s, outline-color .14s; }
+    .hand-card.red { color: #b52e35; }
+    .hand-card.selected { outline: 2px solid var(--gold-bright); outline-offset: 2px; transform: translateY(-3px); }
+    .hand-card:disabled { cursor: default; opacity: .8; }
+    .hand-card-rank { align-self: flex-start; font: 700 15px/1 Georgia, serif; }
+    .hand-card-suit { flex: 1; align-self: center; padding-top: 6px; font: 31px/1 Georgia, serif; }
+    .hand-card-ability { align-self: center; border: 1px solid currentColor; padding: 3px 4px; font: 800 7px/1 "Avenir Next", Avenir, sans-serif; letter-spacing: .06em; }
     .playing-card {
       position: relative; display: flex; width: 214px; height: 300px; flex-direction: column; justify-content: space-between;
       border: 1px solid #d6d4ce; border-radius: 13px; padding: 13px 15px; color: var(--black-suit); background: linear-gradient(145deg, #fff, #f8f6f0);
@@ -327,7 +335,7 @@
       .game-controls { gap: 5px; }
       .game-controls button { padding: 0 7px; letter-spacing: .04em; }
       .playing-card { width: 194px; height: 274px; }
-      .card-slot { width: 206px; height: 291px; }
+      .card-slot { width: 100%; }
       .card-center { font-size: 88px; }
       .table-area { min-height: 530px; }
     }
@@ -1113,10 +1121,16 @@
       function gameStateFromOnlineSnapshot(snapshot) {
         const activeIndex = snapshot.players.findIndex((player) => player.id === snapshot.activePlayerId);
         const ownTurn = snapshot.phase === "playing" && activeIndex >= 0 && snapshot.players[activeIndex].id === snapshot.viewerId;
+        const viewerIndex = snapshot.players.findIndex((player) => player.id === snapshot.viewerId);
+        const handAvailable = ["playing", "paused", "won"].includes(snapshot.phase);
+        const viewerHand = handAvailable ? snapshot.hand.map((card) => ({ ...card })) : [];
+        const selectedCard = state?.online && state.viewerId === snapshot.viewerId
+          ? Math.min(state.selectedCard, Math.max(0, viewerHand.length - 1))
+          : 0;
         const players = snapshot.players.map((player) => ({
           ...player,
-          hand: ownTurn && player.id === snapshot.viewerId
-            ? snapshot.hand.map((card) => ({ ...card }))
+          hand: player.id === snapshot.viewerId && handAvailable
+            ? viewerHand
             : Array.from({ length: player.handCount }, () => null),
         }));
         return {
@@ -1136,9 +1150,11 @@
           winnerTeamId: snapshot.winnerTeamId,
           view: onlineView,
           phase: ownTurn ? "reveal" : snapshot.phase,
-          activePlayer: ownTurn ? activeIndex : null,
+          onlinePhase: snapshot.phase,
+          activePlayerId: snapshot.activePlayerId,
+          activePlayer: viewerIndex,
           activePlayerIndex: activeIndex,
-          selectedCard: 0,
+          selectedCard,
         };
       }
 
@@ -1220,13 +1236,63 @@
         return playingCard;
       }
 
+      function currentHandPlayer() {
+        if (!state) return null;
+        return state.online
+          ? state.players.find((player) => player.id === state.viewerId)
+          : state.players[state.activePlayer];
+      }
+
+      function onlineHandAvailable() {
+        return state?.online && ["playing", "paused", "won"].includes(state.onlinePhase);
+      }
+
+      function canPlayCurrentHand() {
+        if (!state || state.winnerTeamId) return false;
+        if (state.online) return state.onlinePhase === "playing" && state.activePlayerId === state.viewerId;
+        return state.phase === "reveal";
+      }
+
+      function renderHandCards(hand) {
+        const cards = document.createElement("div");
+        cards.className = "hand-cards";
+        hand.forEach((card, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `hand-card${card.red ? " red" : ""}${state.selectedCard === index ? " selected" : ""}`;
+          button.setAttribute("aria-label", `${card.rank} of ${card.suitName}${card.jackType ? `, ${card.jackType}` : ""}`);
+          button.setAttribute("aria-pressed", String(state.selectedCard === index));
+          const rank = document.createElement("span");
+          rank.className = "hand-card-rank";
+          rank.textContent = card.rank;
+          const suit = document.createElement("span");
+          suit.className = "hand-card-suit";
+          suit.textContent = card.symbol;
+          button.append(rank, suit);
+          if (card.jackType) {
+            const ability = document.createElement("span");
+            ability.className = "hand-card-ability";
+            ability.textContent = card.jackType;
+            button.append(ability);
+          }
+          button.addEventListener("click", () => {
+            if (state.selectedCard === index) return;
+            state.selectedCard = index;
+            state.pendingMove = null;
+            renderGame();
+          });
+          cards.append(button);
+        });
+        return cards;
+      }
+
       function isSequenceLocked(index) {
         return state.sequences.some((sequence) => sequence.cells.includes(index));
       }
 
       function legalMovesForActiveCard() {
-        if (!state || state.phase !== "reveal" || state.winnerTeamId) return [];
-        const player = state.players[state.activePlayer];
+        if (!canPlayCurrentHand()) return [];
+        const player = currentHandPlayer();
         const card = player.hand[state.selectedCard];
         if (card.jackType === "WILD") {
           return state.board.filter((tile) => !tile.free && !tile.tokenTeamId).map((tile) => tile.index);
@@ -1244,9 +1310,9 @@
       function renderBoard() {
         if (!state) return;
         const legalMoves = new Set(legalMovesForActiveCard());
-        const revealing = state.phase === "reveal" && !state.winnerTeamId;
-        const card = revealing ? state.players[state.activePlayer].hand[state.selectedCard] : null;
-        if (revealing && card) {
+        const canPlay = canPlayCurrentHand();
+        const card = canPlay ? currentHandPlayer()?.hand[state.selectedCard] : null;
+        if (canPlay && card) {
           if (card.jackType === "WILD") elements.boardInstruction.textContent = "Two-eyed Jack: choose any open space for your team's token.";
           else if (card.jackType === "REMOVE") elements.boardInstruction.textContent = legalMoves.size
             ? "One-eyed Jack: choose an unprotected opponent token to remove."
@@ -1256,6 +1322,9 @@
             : "Both matching spaces are occupied. Discard this dead card to draw a replacement.";
         } else if (state.phase === "paused") {
           elements.boardInstruction.textContent = "Play is paused while the organizer edits teams.";
+        } else if (state.online && state.onlinePhase === "playing") {
+          const activePlayer = state.players[state.activePlayerIndex];
+          elements.boardInstruction.textContent = `${activePlayer?.name ?? "The next player"} is playing. Your full hand remains visible on this device.`;
         } else if (state.winnerTeamId) {
           const winner = state.teams.find((team) => team.id === state.winnerTeamId);
           elements.boardInstruction.textContent = `${winner.name} completed the winning sequence count.`;
@@ -1488,44 +1557,46 @@
         elements.deckCount.textContent = String(state.deck.length);
         elements.discardCount.textContent = String(state.discard.length);
         elements.activeCount.textContent = String(state.players.length);
-        const revealing = state.phase === "reveal" && state.activePlayer !== null && !state.winnerTeamId;
+        const localHandReveal = !state.online && state.phase === "reveal" && state.activePlayer !== null;
+        const handVisible = localHandReveal || onlineHandAvailable();
+        const canAct = canPlayCurrentHand();
         const selecting = !state.online && state.phase === "select" && !state.winnerTeamId;
-        const paused = state.phase === "paused";
-        const ended = state.phase === "ended";
-        const won = state.phase === "won" && Boolean(state.winnerTeamId);
+        const paused = state.online ? state.onlinePhase === "paused" : state.phase === "paused";
+        const ended = state.online ? state.onlinePhase === "ended" : state.phase === "ended";
+        const won = state.online ? state.onlinePhase === "won" : state.phase === "won";
         const winner = state.teams.find((team) => team.id === state.winnerTeamId);
         elements.turnLabel.textContent = ended ? "Table cleared" : won ? "Match complete" : paused ? "Organizer pause"
-          : selecting ? "Private handoff" : state.online && state.phase === "playing" ? "Waiting for turn" : "Private hand";
+          : selecting ? "Private handoff" : state.online && !canAct ? "Your hand · waiting for turn" : "Your hand";
         const remoteActivePlayer = state.online && state.activePlayerIndex >= 0 ? state.players[state.activePlayerIndex] : null;
-        elements.activePlayerName.textContent = revealing ? state.players[state.activePlayer].name
+        const ownPlayer = currentHandPlayer();
+        elements.activePlayerName.textContent = canAct ? ownPlayer.name
           : selecting ? state.players[expectedPlayer].name
-            : state.online && remoteActivePlayer ? remoteActivePlayer.name
+            : state.online && remoteActivePlayer && state.onlinePhase === "playing" ? remoteActivePlayer.name
+              : handVisible ? ownPlayer.name
             : paused ? "Teams paused" : won ? `${winner.name} wins` : "Game ended";
-        elements.turnHint.textContent = revealing
-          ? "Choose a card, then select a legal space on the board."
+        elements.turnHint.textContent = canAct
+          ? "Choose one of your cards, then select a legal space on the board."
           : selecting ? `Pass the device to ${state.players[expectedPlayer].name}, then select their name to reveal only their hand.`
-            : state.online && state.phase === "playing" ? `${remoteActivePlayer?.name ?? "The next player"} is playing. Their private cards stay on their device.`
+            : state.online && state.onlinePhase === "playing" ? `${remoteActivePlayer?.name ?? "The next player"} is playing. Your full hand stays visible on your device.`
             : paused ? "The organizer can update team assignments without changing the board score."
-              : won ? `${winner.name} completed the winning number of sequences.` : "Hands and discard pile cleared.";
+              : won ? `${winner.name} completed the winning number of sequences.`
+                : handVisible ? "Your full hand stays visible on this device." : "Hands and discard pile cleared.";
         elements.cardSlot.replaceChildren();
-        if (revealing) {
-          const hand = state.players[state.activePlayer].hand;
-          if (hand.length) elements.cardSlot.append(renderCard(hand[state.selectedCard]));
+        if (handVisible) {
+          const hand = ownPlayer?.hand ?? [];
+          if (hand.length) elements.cardSlot.append(renderHandCards(hand));
         }
-        elements.handNavigation.hidden = !revealing;
-        if (revealing) {
-          const hand = state.players[state.activePlayer].hand;
-          elements.handPosition.textContent = `${state.selectedCard + 1} of ${hand.length}`;
-          elements.previousCard.disabled = hand.length < 2;
-          elements.nextCard.disabled = hand.length < 2;
-        }
-        elements.revealActions.hidden = !revealing;
-        const legalMoveCount = revealing ? legalMovesForActiveCard().length : 0;
-        elements.playedButton.disabled = !revealing || state.pendingMove === null || locked;
-        elements.deadCardButton.hidden = !revealing || legalMoveCount > 0;
-        elements.deadCardButton.disabled = !revealing || locked;
-        elements.switchButton.disabled = !revealing || locked;
-        elements.privacyNote.hidden = !revealing;
+        elements.handNavigation.hidden = true;
+        elements.revealActions.hidden = !canAct;
+        const legalMoveCount = canAct ? legalMovesForActiveCard().length : 0;
+        elements.playedButton.disabled = !canAct || state.pendingMove === null || locked;
+        elements.deadCardButton.hidden = !canAct || legalMoveCount > 0;
+        elements.deadCardButton.disabled = !canAct || locked;
+        elements.switchButton.disabled = !canAct || locked;
+        elements.privacyNote.hidden = !handVisible;
+        elements.privacyNote.textContent = state.online
+          ? "Only your hand is sent to this device."
+          : "Only the current player's hand is shown during local play.";
         elements.selector.hidden = !selecting;
         elements.endedPanel.hidden = !ended && !won;
         elements.endedPanel.querySelector(".ended-title").textContent = won ? `${winner.name} wins` : "Game ended";

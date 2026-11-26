@@ -1,6 +1,6 @@
 # Sequence Table Dealer
 
-A Sequence card dealer and board companion with two modes: local play on one device and private invite rooms. Online hands are stored by the game server and sent only to the player whose turn it is.
+A Sequence card dealer and board companion with two modes: local play on one device and private invite rooms. Online, each player sees their complete hand on their own device throughout the game; only the active player can place a token.
 
 ## Run locally
 

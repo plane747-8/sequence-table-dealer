@@ -77,8 +77,9 @@ test("private room broadcasts only the active player's hand", async (context) =>
   host.send(JSON.stringify({ type: "start", teams, assignments }));
   const [hostStart, guestStart] = await Promise.all([hostStartPromise, guestStartPromise]);
   assert.equal(hostStart.hand.length, 7);
-  assert.equal(guestStart.hand.length, 0);
+  assert.equal(guestStart.hand.length, 7);
   assert.equal(guestStart.activePlayerId, hostStart.viewerId);
+  assert.equal(new Set([...hostStart.hand, ...guestStart.hand].map((card) => card.id)).size, 14);
   assert.ok(hostStart.players.every((player) => !("hand" in player)));
 
   const cardIndex = hostStart.hand.findIndex((card) => !card.jackType);
@@ -88,8 +89,9 @@ test("private room broadcasts only the active player's hand", async (context) =>
   const guestNextPromise = waitForMessage(guest, (message) => message.type === "state" && message.phase === "playing" && message.activePlayerId === message.viewerId);
   host.send(JSON.stringify({ type: "playCard", cardIndex, tileIndex }));
   const [hostNext, guestNext] = await Promise.all([hostNextPromise, guestNextPromise]);
-  assert.equal(hostNext.hand.length, 0);
+  assert.equal(hostNext.hand.length, 7);
   assert.equal(guestNext.hand.length, 7);
+  assert.equal(new Set([...hostNext.hand, ...guestNext.hand].map((card) => card.id)).size, 14);
   assert.equal(hostNext.discardCount, 1);
   assert.equal(hostNext.deckCount, 89);
   assert.equal(guestNext.board[tileIndex].tokenTeamId, "red");
