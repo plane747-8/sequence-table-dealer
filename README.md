@@ -1,6 +1,6 @@
 # Sequence Table Dealer
 
-A local-first Sequence card dealer and board companion for one shared device. Player hands stay private during handoffs; the app includes the fixed card layout, token placement, team setup, and live scoring.
+A Sequence card dealer and board companion with three modes: local play on one device, public matchmaking, and private invite rooms. Online hands are stored by the game server and sent only to the player whose turn it is.
 
 ## Run locally
 
@@ -11,6 +11,18 @@ python3 -m http.server 4173
 ```
 
 Then visit `http://localhost:4173`.
+
+## Multiplayer server
+
+GitHub Pages hosts the browser app. Public matchmaking and private rooms require the separate Node.js WebSocket server in `sequence-server`.
+
+1. In Render, choose **New → Blueprint** and connect this repository. Render reads `render.yaml` and creates the `sequence-multiplayer` web service.
+2. Wait for the service deployment to finish, then check `https://YOUR-SERVICE.onrender.com/health` for an `ok` response.
+3. Open the GitHub Pages app and enter `https://YOUR-SERVICE.onrender.com` in **Multiplayer server**. The address is saved in that browser. Friends can use the invite URL, which includes the room code and server address.
+
+The free Render service may sleep when idle, so the first connection after inactivity can take a little longer. Room state is held in server memory; active rooms are not durable across service restarts.
+
+Public-match players can see each other's chosen display names. The app has no text chat or account system.
 
 ## Publish with GitHub Pages
 

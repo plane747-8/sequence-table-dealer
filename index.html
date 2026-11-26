@@ -163,6 +163,35 @@
     .shuffle-overlay.ready .shuffle-card { animation: none; transform: translateY(0) rotate(0); transition: transform .25s; }
     .toast { position: fixed; z-index: 30; right: 20px; bottom: 20px; max-width: min(380px, calc(100% - 40px)); border: 1px solid rgba(217,182,111,.42); border-radius: 4px; padding: 12px 16px; color: #f4e3b8; background: #203342; box-shadow: 0 12px 35px rgba(0,0,0,.32); font-size: 12px; animation: rise-in .2s ease both; }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; clip-path: inset(50%); }
+    .mode-layout { width: min(940px, 100%); margin: 0 auto; padding: 45px 0 20px; }
+    .mode-heading { margin-bottom: 24px; }
+    .mode-heading h1 { margin-bottom: 10px; }
+    .mode-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .mode-card { display: flex; min-width: 0; flex-direction: column; border: 1px solid var(--line); border-top: 3px solid var(--team-color, var(--gold)); border-radius: 5px; padding: 19px; background: rgba(20,36,49,.92); }
+    .mode-icon { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid color-mix(in srgb, var(--team-color, var(--gold)) 60%, transparent); border-radius: 50%; color: var(--team-color, var(--gold-bright)); font-size: 19px; }
+    .mode-card h2 { margin: 14px 0 7px; font: 22px Georgia, serif; }
+    .mode-card p { min-height: 50px; margin: 0 0 15px; color: #9eabad; font-size: 11px; line-height: 1.6; }
+    .local-mode { --team-color: #75a68c; }
+    .online-mode { --team-color: #d3b36e; }
+    .invite-mode { --team-color: #7799c6; }
+    .mode-label { margin: 0 0 5px; color: #c1cac6; font-size: 10px; }
+    .mode-input { width: 100%; min-width: 0; height: 39px; margin-bottom: 11px; border: 1px solid rgba(220,226,218,.16); border-radius: 3px; padding: 0 10px; color: var(--ink); background: rgba(6,16,24,.4); font-size: 12px; }
+    .mode-input::placeholder { color: #819092; }
+    .mode-card .primary-button, .mode-action { width: 100%; margin-top: auto; }
+    .mode-action { min-height: 44px; }
+    .join-room-fields { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; margin-top: 10px; }
+    .join-room-fields .mode-input { margin: 0; }
+    .join-room-fields .quiet-button { min-height: 39px; }
+    .server-settings { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: center; gap: 3px 12px; margin-top: 19px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .server-settings label { color: #bdc5c2; font-size: 11px; font-weight: 700; }
+    .server-settings .mode-input { margin: 0; }
+    .server-settings p { grid-column: 2; margin: 0; color: #819092; font-size: 10px; }
+    .mode-message { min-height: 18px; margin: 12px 0 0; color: #f1a49a; font-size: 12px; }
+    .invite-code-panel { display: flex; align-items: center; gap: 16px; margin: 17px 0; border: 1px solid rgba(217,182,111,.25); border-radius: 4px; padding: 13px 15px; background: rgba(217,182,111,.05); }
+    .invite-code-panel strong { color: var(--gold-bright); font: 24px Georgia, serif; letter-spacing: .12em; }
+    .invite-code-panel .secondary-button { margin-left: auto; }
+    .online-player-meta { color: #91a0a1; font-size: 10px; }
+    .mode-status { color: #aeb9b5; font-size: 11px; }
     .team-setup { width: min(850px, 100%); margin: 0 auto; padding: 39px 0 10px; }
     .team-setup-heading { margin-bottom: 25px; }
     .team-setup-heading h1 { margin-bottom: 10px; }
@@ -248,6 +277,13 @@
       .brand-name { font-size: 16px; }
       .offline-label { font-size: 10px; }
       .setup-layout { grid-template-columns: 1fr; gap: 24px; padding-top: 33px; }
+      .mode-layout { padding-top: 28px; }
+      .mode-grid { grid-template-columns: 1fr; }
+      .mode-card p { min-height: 0; }
+      .server-settings { grid-template-columns: 1fr; gap: 7px; }
+      .server-settings p { grid-column: 1; }
+      .invite-code-panel { flex-wrap: wrap; gap: 10px; }
+      .invite-code-panel .secondary-button { width: 100%; margin-left: 0; }
       .team-setup { padding-top: 28px; }
       .setup-copy { padding-top: 0; }
       h1 { max-width: 480px; font-size: 41px; }
@@ -305,7 +341,55 @@
       <div class="offline-label">Ready to play offline</div>
     </header>
 
-    <section class="screen" id="setup-screen" aria-labelledby="setup-title">
+    <section class="screen" id="mode-screen" aria-labelledby="mode-title">
+      <div class="mode-layout">
+        <div class="mode-heading">
+          <div class="eyebrow">Choose your table</div>
+          <h1 id="mode-title">How are you playing?</h1>
+          <p class="intro">Stay around one device, find a public match, or invite friends to a private room.</p>
+        </div>
+        <div class="mode-grid">
+          <article class="mode-card local-mode">
+            <div class="mode-icon" aria-hidden="true">⌂</div>
+            <h2>Local</h2>
+            <p>Pass one device around the table. Private hands stay hidden between turns.</p>
+            <button type="button" class="primary-button" id="local-mode-button">PLAY LOCALLY</button>
+          </article>
+          <article class="mode-card online-mode">
+            <div class="mode-icon" aria-hidden="true">◎</div>
+            <h2>Public match</h2>
+            <p>Join a queue and get matched with players looking for the same table size. Your display name is visible to the match.</p>
+            <label class="mode-label" for="online-player-name">Your name</label>
+            <input class="mode-input" id="online-player-name" type="text" maxlength="24" autocomplete="nickname" placeholder="Name at the table">
+            <label class="mode-label" for="public-capacity">Players in this match</label>
+            <select class="mode-input" id="public-capacity">
+              <option value="2">2 players</option><option value="3">3 players</option><option value="4" selected>4 players</option>
+              <option value="6">6 players</option><option value="8">8 players</option><option value="9">9 players</option>
+              <option value="10">10 players</option><option value="11">11 players</option><option value="12">12 players</option>
+            </select>
+            <button type="button" class="secondary-button mode-action" id="public-mode-button">FIND A PUBLIC MATCH</button>
+          </article>
+          <article class="mode-card invite-mode">
+            <div class="mode-icon" aria-hidden="true">↗</div>
+            <h2>Private room</h2>
+            <p>Host a room and share an invite link, or join a friend's room code.</p>
+            <button type="button" class="secondary-button mode-action" id="host-room-button">HOST A PRIVATE ROOM</button>
+            <div class="join-room-fields">
+              <input class="mode-input" id="join-room-code" type="text" maxlength="6" autocomplete="off" placeholder="6-character room code" aria-label="Private room code">
+              <button type="button" class="quiet-button" id="join-room-button">JOIN</button>
+            </div>
+          </article>
+        </div>
+        <div class="server-settings">
+          <label for="server-url">Multiplayer server</label>
+          <input class="mode-input" id="server-url" type="url" placeholder="https://your-sequence-server.example">
+          <p>Local play works offline. Public matches and invite rooms need the Sequence server address.</p>
+        </div>
+        <p class="mode-message" id="mode-message" role="alert"></p>
+      </div>
+    </section>
+
+    <section class="screen" id="setup-screen" aria-labelledby="setup-title" hidden>
       <div class="setup-layout">
         <div class="setup-copy">
           <div class="eyebrow">A shared-table companion</div>
@@ -330,6 +414,30 @@
           <button type="submit" class="primary-button" id="start-game">CHOOSE TEAMS</button>
           <p class="setup-footnote">A standard Sequence deck contains 104 cards: two copies of every card, including eight special Jacks.</p>
         </form>
+      </div>
+    </section>
+
+    <section class="screen" id="online-lobby-screen" aria-labelledby="online-lobby-title" hidden>
+      <div class="team-setup">
+        <div class="team-setup-heading">
+          <div class="eyebrow" id="online-lobby-type">Private table</div>
+          <h1 id="online-lobby-title">Room lobby</h1>
+          <p class="intro" id="online-lobby-instruction">Waiting for players to join.</p>
+        </div>
+        <div class="invite-code-panel" id="invite-code-panel" hidden>
+          <span class="eyebrow">Invite code</span>
+          <strong id="invite-code">------</strong>
+          <button type="button" class="secondary-button" id="copy-invite-button">COPY INVITE LINK</button>
+        </div>
+        <div class="assignment-panel">
+          <div class="panel-heading"><h2>Players in room</h2><span class="count-label" id="online-player-count">0 / 4</span></div>
+          <div class="team-player-list" id="online-player-list"></div>
+        </div>
+        <p class="error-message" id="online-room-error" role="alert"></p>
+        <div class="team-footer-actions">
+          <button type="button" class="quiet-button" id="leave-online-room">LEAVE TABLE</button>
+          <button type="button" class="primary-button" id="configure-online-teams" hidden>SET TEAMS &amp; START</button>
+        </div>
       </div>
     </section>
 
@@ -487,7 +595,15 @@
       const STANDARD_HANDS = { 2: 7, 3: 6, 4: 6, 6: 5, 8: 4, 9: 4, 10: 3, 11: 3, 12: 3 };
       const byId = (id) => document.getElementById(id);
       const elements = {
-        setupScreen: byId("setup-screen"), teamsScreen: byId("teams-screen"), gameScreen: byId("game-screen"), playerList: byId("player-list"),
+        modeScreen: byId("mode-screen"), setupScreen: byId("setup-screen"), teamsScreen: byId("teams-screen"),
+        onlineLobbyScreen: byId("online-lobby-screen"), gameScreen: byId("game-screen"), playerList: byId("player-list"),
+        localModeButton: byId("local-mode-button"), publicModeButton: byId("public-mode-button"), hostRoomButton: byId("host-room-button"),
+        joinRoomButton: byId("join-room-button"), onlinePlayerName: byId("online-player-name"), publicCapacity: byId("public-capacity"),
+        joinRoomCode: byId("join-room-code"), serverUrl: byId("server-url"), modeMessage: byId("mode-message"),
+        onlineLobbyType: byId("online-lobby-type"), onlineLobbyTitle: byId("online-lobby-title"), onlineLobbyInstruction: byId("online-lobby-instruction"),
+        inviteCodePanel: byId("invite-code-panel"), inviteCode: byId("invite-code"), copyInviteButton: byId("copy-invite-button"),
+        onlinePlayerCount: byId("online-player-count"), onlinePlayerList: byId("online-player-list"), onlineRoomError: byId("online-room-error"),
+        leaveOnlineRoom: byId("leave-online-room"), configureOnlineTeams: byId("configure-online-teams"),
         playerCount: byId("player-count"), addPlayer: byId("add-player"), setupForm: byId("setup-form"),
         setupError: byId("setup-error"), handSetting: byId("hand-setting"), customHandSize: byId("custom-hand-size"),
         teamCount: byId("team-count"), teamConfigList: byId("team-config-list"), teamPlayerList: byId("team-player-list"),
@@ -514,6 +630,12 @@
       let state = null;
       let playerNames = ["", ""];
       let teamDraft = null;
+      let onlineSocket = null;
+      let onlineMode = null;
+      let onlineIdentity = null;
+      let onlineSnapshot = null;
+      let onlineView = "board";
+      let closingOnlineSocket = false;
       let expectedPlayer = 0;
       let toastTimer = 0;
       let shuffleTimer = 0;
@@ -846,6 +968,225 @@
         beginShuffleAnimation("SHUFFLING DECK...", "Mixing all 104 cards before the deal", renderGame);
       }
 
+      function currentServerUrl() {
+        const configured = elements.serverUrl.value.trim() || localStorage.getItem("sequence.serverUrl") || "";
+        if (configured) {
+          localStorage.setItem("sequence.serverUrl", configured);
+          const url = new URL(configured);
+          url.protocol = url.protocol === "https:" || url.protocol === "wss:" ? "wss:" : "ws:";
+          if (!url.pathname.endsWith("/ws")) url.pathname = `${url.pathname.replace(/\/$/, "")}/ws`;
+          return url.toString();
+        }
+        if (location.hostname.endsWith("github.io")) return "";
+        if (location.hostname === "localhost" && location.port === "3000") return `ws://${location.host}/ws`;
+        return "";
+      }
+
+      function setOnlineScreen(screen) {
+        elements.modeScreen.hidden = screen !== "modes";
+        elements.setupScreen.hidden = screen !== "local-setup";
+        elements.teamsScreen.hidden = screen !== "teams";
+        elements.onlineLobbyScreen.hidden = screen !== "lobby";
+        elements.gameScreen.hidden = screen !== "game";
+      }
+
+      function connectOnline(mode, options = {}) {
+        const name = normalizedOnlineName(elements.onlinePlayerName.value);
+        if (!name) {
+          elements.modeMessage.textContent = "Enter your name before joining a match.";
+          elements.onlinePlayerName.focus();
+          return;
+        }
+        const url = currentServerUrl();
+        if (!url) {
+          elements.modeMessage.textContent = "Set the multiplayer server address first. Local play works without a server.";
+          elements.serverUrl.focus();
+          return;
+        }
+        if (onlineSocket && onlineSocket.readyState < WebSocket.CLOSING) {
+          closingOnlineSocket = true;
+          onlineSocket.close();
+        }
+        onlineMode = mode;
+        onlineSnapshot = null;
+        onlineIdentity = null;
+        closingOnlineSocket = false;
+        elements.modeMessage.textContent = "Connecting to the Sequence server…";
+        elements.onlineRoomError.textContent = "";
+        setOnlineScreen("lobby");
+        elements.onlineLobbyTitle.textContent = mode === "public" ? "Finding your table" : mode === "host" ? "Creating private room" : "Joining private room";
+        elements.onlineLobbyType.textContent = mode === "public" ? "Public match" : "Private table";
+        elements.onlineLobbyInstruction.textContent = "Connecting securely to the multiplayer server.";
+        onlineSocket = new WebSocket(url);
+        const storedToken = options.code ? localStorage.getItem(`sequence.player.${options.code}`) : null;
+        onlineSocket.addEventListener("open", () => {
+          elements.modeMessage.textContent = "";
+          if (mode === "public") {
+            onlineSocket.send(JSON.stringify({ type: "joinPublic", name, capacity: Number(elements.publicCapacity.value) }));
+          } else if (mode === "host") {
+            onlineSocket.send(JSON.stringify({ type: "createPrivate", name, capacity: Number(elements.publicCapacity.value) }));
+          } else {
+            onlineSocket.send(JSON.stringify({ type: "joinRoom", name, code: options.code, playerToken: storedToken }));
+          }
+        });
+        onlineSocket.addEventListener("message", (event) => {
+          let message;
+          try { message = JSON.parse(event.data); } catch { return; }
+          handleOnlineMessage(message);
+        });
+        onlineSocket.addEventListener("error", () => {
+          elements.onlineRoomError.textContent = "Could not reach the multiplayer server. Check the server address and try again.";
+        });
+        onlineSocket.addEventListener("close", () => {
+          onlineSocket = null;
+          if (!closingOnlineSocket && !elements.modeScreen.hidden) {
+            elements.modeMessage.textContent = "The multiplayer connection closed.";
+          }
+          closingOnlineSocket = false;
+        });
+      }
+
+      function normalizedOnlineName(value) {
+        return typeof value === "string" ? value.trim().replace(/\s+/g, " ").slice(0, 24) : "";
+      }
+
+      function validateInviteCode(value) {
+        return typeof value === "string" ? value.toUpperCase().replace(/[^A-F0-9]/g, "").slice(0, 6) : "";
+      }
+
+      function handleOnlineMessage(message) {
+        if (message.type === "error") {
+          elements.onlineRoomError.textContent = message.message;
+          elements.modeMessage.textContent = message.message;
+          return;
+        }
+        if (message.type === "joined") {
+          onlineIdentity = message;
+          localStorage.setItem(`sequence.player.${message.roomCode}`, message.playerToken);
+          elements.inviteCode.textContent = message.roomCode;
+          return;
+        }
+        if (message.type === "queueStatus") {
+          elements.onlineLobbyTitle.textContent = "Looking for players";
+          elements.onlineLobbyType.textContent = "Public match";
+          elements.onlineLobbyInstruction.textContent = `You are in the ${message.capacity}-player queue. Waiting for ${message.needed} more ${message.needed === 1 ? "player" : "players"}.`;
+          elements.onlinePlayerCount.textContent = `${message.waiting} / ${message.capacity}`;
+          elements.onlinePlayerList.replaceChildren();
+          return;
+        }
+        if (message.type !== "state") return;
+        onlineSnapshot = message;
+        if (message.phase === "lobby") {
+          renderOnlineLobby(message);
+          return;
+        }
+        setOnlineScreen("game");
+        state = gameStateFromOnlineSnapshot(message);
+        renderGame();
+      }
+
+      function renderOnlineLobby(snapshot) {
+        setOnlineScreen("lobby");
+        const isPrivate = snapshot.privacy === "private";
+        elements.onlineLobbyType.textContent = isPrivate ? "Private table" : "Public match";
+        elements.onlineLobbyTitle.textContent = isPrivate ? "Room lobby" : "Match found";
+        elements.onlineLobbyInstruction.textContent = snapshot.isHost
+          ? "Check the seating order. Set the teams and start when your players are ready."
+          : "You’re in. The host will choose teams and start the game.";
+        elements.onlinePlayerCount.textContent = `${snapshot.players.length} / ${snapshot.capacity}`;
+        elements.inviteCode.textContent = snapshot.roomCode;
+        elements.inviteCodePanel.hidden = !isPrivate || !snapshot.isHost;
+        elements.configureOnlineTeams.hidden = !snapshot.isHost || snapshot.players.length < 2;
+        elements.onlinePlayerList.replaceChildren();
+        snapshot.players.forEach((player) => {
+          const row = document.createElement("div");
+          row.className = "team-player-row";
+          const name = document.createElement("span");
+          name.className = "team-player-name";
+          name.textContent = `Seat ${player.seat + 1} · ${player.name}${player.id === snapshot.hostId ? " · HOST" : ""}`;
+          const status = document.createElement("span");
+          status.className = "online-player-meta";
+          status.textContent = player.connected ? "CONNECTED" : "RECONNECTING";
+          row.append(name, status);
+          elements.onlinePlayerList.append(row);
+        });
+      }
+
+      function gameStateFromOnlineSnapshot(snapshot) {
+        const activeIndex = snapshot.players.findIndex((player) => player.id === snapshot.activePlayerId);
+        const ownTurn = snapshot.phase === "playing" && activeIndex >= 0 && snapshot.players[activeIndex].id === snapshot.viewerId;
+        const players = snapshot.players.map((player) => ({
+          ...player,
+          hand: ownTurn && player.id === snapshot.viewerId
+            ? snapshot.hand.map((card) => ({ ...card }))
+            : Array.from({ length: player.handCount }, () => null),
+        }));
+        return {
+          online: true,
+          roomCode: snapshot.roomCode,
+          hostId: snapshot.hostId,
+          viewerId: snapshot.viewerId,
+          isHost: snapshot.isHost,
+          deck: Array.from({ length: snapshot.deckCount }, () => null),
+          discard: Array.from({ length: snapshot.discardCount }, () => null),
+          players,
+          teams: snapshot.teams.map((team) => ({ ...team })),
+          handSize: players[0]?.handCount ?? 0,
+          board: snapshot.board,
+          sequences: snapshot.sequences,
+          pendingMove: null,
+          winnerTeamId: snapshot.winnerTeamId,
+          view: onlineView,
+          phase: ownTurn ? "reveal" : snapshot.phase,
+          activePlayer: ownTurn ? activeIndex : null,
+          activePlayerIndex: activeIndex,
+          selectedCard: 0,
+        };
+      }
+
+      function openOnlineTeamSetup() {
+        if (!onlineSnapshot?.isHost || onlineSnapshot.players.length < 2) return;
+        const playerCount = onlineSnapshot.players.length;
+        const count = playerCount === 3 ? 3 : 2;
+        teamDraft = {
+          online: true,
+          players: onlineSnapshot.players.map((player) => ({ ...player })),
+          teams: TEAM_PRESETS.slice(0, count).map((team) => ({ ...team })),
+          assignments: onlineSnapshot.players.map(() => null),
+          handSize: STANDARD_HANDS[playerCount] ?? 5,
+        };
+        elements.teamCount.querySelector('option[value="3"]').disabled = playerCount < 3;
+        elements.teamCount.value = String(count);
+        elements.backToPlayers.textContent = "BACK TO ROOM";
+        elements.teamsScreen.hidden = false;
+        elements.onlineLobbyScreen.hidden = true;
+        renderTeamSetup();
+      }
+
+      function leaveOnlineRoom() {
+        closingOnlineSocket = true;
+        onlineSocket?.close();
+        onlineSocket = null;
+        onlineMode = null;
+        onlineIdentity = null;
+        onlineSnapshot = null;
+        teamDraft = null;
+        state = null;
+        elements.modeMessage.textContent = "";
+        elements.onlineRoomError.textContent = "";
+        setOnlineScreen("modes");
+      }
+
+      function inviteUrl(roomCode) {
+        const url = new URL(location.href);
+        url.search = "";
+        url.hash = "";
+        url.searchParams.set("room", roomCode);
+        const serverUrl = currentServerUrl();
+        if (serverUrl) url.searchParams.set("server", serverUrl.replace(/^ws/, "http"));
+        return url.toString();
+      }
+
       function showToast(message) {
         elements.toast.textContent = message;
         elements.toast.hidden = false;
@@ -1060,6 +1401,7 @@
 
       function openTeamEditor() {
         if (!state || state.phase === "ended" || state.phase === "won" || locked) return;
+        if (state.online) onlineSocket?.send(JSON.stringify({ type: "pause" }));
         state.previousPhase = state.phase;
         state.phase = "paused";
         state.teamEditDraft = {
@@ -1089,6 +1431,10 @@
           }));
           state.players.forEach((player, index) => { player.teamId = draft.assignments[index]; });
         }
+        if (state.online) {
+          if (save) onlineSocket?.send(JSON.stringify({ type: "assignTeams", teams: state.teamEditDraft.teams, assignments: state.teamEditDraft.assignments }));
+          onlineSocket?.send(JSON.stringify({ type: "resume" }));
+        }
         state.teamEditDraft = null;
         state.phase = state.previousPhase;
         state.previousPhase = null;
@@ -1101,7 +1447,8 @@
         state.players.forEach((player, index) => {
           const team = state.teams.find((item) => item.id === player.teamId);
           const row = document.createElement("div");
-          row.className = `roster-row${state.phase === "reveal" && state.activePlayer === index ? " active" : ""}`;
+          const activeSeat = state.online ? state.activePlayerIndex === index : state.phase === "reveal" && state.activePlayer === index;
+          row.className = `roster-row${activeSeat ? " active" : ""}`;
           const name = document.createElement("span");
           name.className = "roster-name";
           name.textContent = player.name;
@@ -1144,18 +1491,22 @@
         elements.discardCount.textContent = String(state.discard.length);
         elements.activeCount.textContent = String(state.players.length);
         const revealing = state.phase === "reveal" && state.activePlayer !== null && !state.winnerTeamId;
-        const selecting = state.phase === "select" && !state.winnerTeamId;
+        const selecting = !state.online && state.phase === "select" && !state.winnerTeamId;
         const paused = state.phase === "paused";
         const ended = state.phase === "ended";
         const won = state.phase === "won" && Boolean(state.winnerTeamId);
         const winner = state.teams.find((team) => team.id === state.winnerTeamId);
-        elements.turnLabel.textContent = ended ? "Table cleared" : won ? "Match complete" : paused ? "Organizer pause" : selecting ? "Private handoff" : "Private hand";
+        elements.turnLabel.textContent = ended ? "Table cleared" : won ? "Match complete" : paused ? "Organizer pause"
+          : selecting ? "Private handoff" : state.online && state.phase === "playing" ? "Waiting for turn" : "Private hand";
+        const remoteActivePlayer = state.online && state.activePlayerIndex >= 0 ? state.players[state.activePlayerIndex] : null;
         elements.activePlayerName.textContent = revealing ? state.players[state.activePlayer].name
           : selecting ? state.players[expectedPlayer].name
+            : state.online && remoteActivePlayer ? remoteActivePlayer.name
             : paused ? "Teams paused" : won ? `${winner.name} wins` : "Game ended";
         elements.turnHint.textContent = revealing
           ? "Choose a card, then select a legal space on the board."
           : selecting ? `Pass the device to ${state.players[expectedPlayer].name}, then select their name to reveal only their hand.`
+            : state.online && state.phase === "playing" ? `${remoteActivePlayer?.name ?? "The next player"} is playing. Their private cards stay on their device.`
             : paused ? "The organizer can update team assignments without changing the board score."
               : won ? `${winner.name} completed the winning number of sequences.` : "Hands and discard pile cleared.";
         elements.cardSlot.replaceChildren();
@@ -1191,10 +1542,12 @@
         elements.boardTab.setAttribute("aria-selected", String(state.view === "board"));
         elements.scoreboardTab.classList.toggle("active", state.view === "scoreboard");
         elements.scoreboardTab.setAttribute("aria-selected", String(state.view === "scoreboard"));
-        elements.shuffleButton.disabled = ended || won || locked;
-        elements.editTeamsButton.disabled = ended || won || locked;
-        elements.restartButton.disabled = locked;
-        elements.endButton.disabled = ended || won || locked;
+        const hostControlsDisabled = state.online && !state.isHost;
+        elements.shuffleButton.disabled = ended || won || locked || hostControlsDisabled;
+        elements.editTeamsButton.disabled = ended || won || locked || hostControlsDisabled;
+        elements.restartButton.disabled = locked || hostControlsDisabled;
+        elements.endButton.disabled = ended || won || locked || hostControlsDisabled;
+        elements.switchButton.hidden = Boolean(state.online);
         if (selecting) renderSelector();
         renderRoster();
         renderBoard();
@@ -1211,6 +1564,11 @@
 
       function playSelectedCard() {
         if (!state || state.phase !== "reveal" || locked || state.pendingMove === null) return;
+        if (state.online) {
+          onlineSocket?.send(JSON.stringify({ type: "playCard", cardIndex: state.selectedCard, tileIndex: state.pendingMove }));
+          state.pendingMove = null;
+          return;
+        }
         const player = state.players[state.activePlayer];
         const [played] = player.hand.splice(state.selectedCard, 1);
         const placedIndex = state.pendingMove;
@@ -1245,6 +1603,10 @@
 
       function discardDeadCard() {
         if (!state || state.phase !== "reveal" || locked || legalMovesForActiveCard().length) return;
+        if (state.online) {
+          onlineSocket?.send(JSON.stringify({ type: "playCard", cardIndex: state.selectedCard, deadCard: true }));
+          return;
+        }
         const player = state.players[state.activePlayer];
         const [played] = player.hand.splice(state.selectedCard, 1);
         state.discard.push(played);
@@ -1267,7 +1629,7 @@
       }
 
       function switchPlayer() {
-        if (!state || state.phase !== "reveal" || locked) return;
+        if (!state || state.online || state.phase !== "reveal" || locked) return;
         expectedPlayer = (state.activePlayer + 1) % state.players.length;
         state.pendingMove = null;
         setPhase("select");
@@ -1275,6 +1637,10 @@
 
       function manualShuffle() {
         if (!state || state.phase === "ended" || locked) return;
+        if (state.online) {
+          onlineSocket?.send(JSON.stringify({ type: "shuffle" }));
+          return;
+        }
         state.deck = shuffle([...state.deck, ...state.discard]);
         state.discard = [];
         assertDeckIntegrity();
@@ -1316,16 +1682,71 @@
           return;
         }
         const confirmed = teamDraft;
+        if (confirmed.online) {
+          onlineSocket?.send(JSON.stringify({ type: "assignTeams", teams: confirmed.teams, assignments: confirmed.assignments }));
+          onlineSocket?.send(JSON.stringify({ type: "start", teams: confirmed.teams, assignments: confirmed.assignments, handSize: confirmed.handSize }));
+          teamDraft = null;
+          return;
+        }
         startGame(confirmed.players.map((player) => player.name), confirmed.handSize, confirmed.teams, confirmed.assignments);
         teamDraft = null;
       });
       elements.backToPlayers.addEventListener("click", () => {
         if (!teamDraft) return;
+        if (teamDraft.online) {
+          teamDraft = null;
+          renderOnlineLobby(onlineSnapshot);
+          return;
+        }
         playerNames = teamDraft.players.map((player) => player.name);
         elements.teamsScreen.hidden = true;
         elements.setupScreen.hidden = false;
         renderSetupPlayers();
       });
+      elements.localModeButton.addEventListener("click", () => {
+        elements.setupError.textContent = "";
+        setOnlineScreen("local-setup");
+      });
+      elements.publicModeButton.addEventListener("click", () => connectOnline("public"));
+      elements.hostRoomButton.addEventListener("click", () => connectOnline("host"));
+      elements.joinRoomButton.addEventListener("click", () => {
+        const code = elements.joinRoomCode.value.trim().toUpperCase();
+        if (!/^[A-F0-9]{6}$/.test(code)) {
+          elements.modeMessage.textContent = "Enter the six-character room code from your invite.";
+          return;
+        }
+        connectOnline("join", { code });
+      });
+      elements.joinRoomCode.addEventListener("input", () => {
+        elements.joinRoomCode.value = elements.joinRoomCode.value.toUpperCase().replace(/[^A-F0-9]/g, "");
+      });
+      elements.configureOnlineTeams.addEventListener("click", openOnlineTeamSetup);
+      elements.leaveOnlineRoom.addEventListener("click", leaveOnlineRoom);
+      elements.copyInviteButton.addEventListener("click", async () => {
+        if (!onlineSnapshot?.roomCode) return;
+        try {
+          await navigator.clipboard.writeText(inviteUrl(onlineSnapshot.roomCode));
+          showToast("Invite link copied.");
+        } catch {
+          elements.onlineRoomError.textContent = "Could not copy the invite link. Copy the room code instead.";
+        }
+      });
+      elements.serverUrl.value = localStorage.getItem("sequence.serverUrl") ?? "";
+      elements.serverUrl.addEventListener("change", () => {
+        const value = elements.serverUrl.value.trim();
+        if (!value) localStorage.removeItem("sequence.serverUrl");
+        else localStorage.setItem("sequence.serverUrl", value);
+      });
+      const inviteParams = new URLSearchParams(location.search);
+      if (inviteParams.has("room")) {
+        elements.joinRoomCode.value = validateInviteCode(inviteParams.get("room"));
+        const inviteServer = inviteParams.get("server");
+        if (inviteServer) {
+          elements.serverUrl.value = inviteServer;
+          localStorage.setItem("sequence.serverUrl", inviteServer);
+        }
+        elements.modeMessage.textContent = "Private invite ready. Enter your name, then join the room.";
+      }
       elements.customHandSize.addEventListener("input", () => {
         const max = Number(elements.customHandSize.max);
         const value = Number(elements.customHandSize.value);
@@ -1337,8 +1758,8 @@
       elements.deadCardButton.addEventListener("click", discardDeadCard);
       elements.switchButton.addEventListener("click", switchPlayer);
       elements.shuffleButton.addEventListener("click", manualShuffle);
-      elements.boardTab.addEventListener("click", () => { state.view = "board"; renderGame(); });
-      elements.scoreboardTab.addEventListener("click", () => { state.view = "scoreboard"; renderGame(); });
+      elements.boardTab.addEventListener("click", () => { if (!state) return; state.view = "board"; onlineView = "board"; renderGame(); });
+      elements.scoreboardTab.addEventListener("click", () => { if (!state) return; state.view = "scoreboard"; onlineView = "scoreboard"; renderGame(); });
       elements.editTeamsButton.addEventListener("click", openTeamEditor);
       elements.cancelTeamEdit.addEventListener("click", () => closeTeamEditor(false));
       elements.saveTeamEdit.addEventListener("click", () => closeTeamEditor(true));
@@ -1347,10 +1768,18 @@
         closeTeamEditor(false);
       });
       elements.restartButton.addEventListener("click", () => {
+        if (state?.online) {
+          onlineSocket?.send(JSON.stringify({ type: "restart" }));
+          return;
+        }
         startGame(playerNames, state.handSize, state.teams, state.players.map((player) => player.teamId));
       });
       elements.endButton.addEventListener("click", () => {
         if (!state || state.phase === "ended" || state.phase === "won") return;
+        if (state.online) {
+          onlineSocket?.send(JSON.stringify({ type: "endGame" }));
+          return;
+        }
         state.players.forEach((player) => { player.hand = []; });
         state.deck = [];
         state.discard = [];
@@ -1360,11 +1789,16 @@
         renderGame();
       });
       elements.newGameButton.addEventListener("click", () => {
+        if (state?.online) {
+          leaveOnlineRoom();
+          return;
+        }
         state = null;
         teamDraft = null;
         elements.gameScreen.hidden = true;
         elements.teamsScreen.hidden = true;
-        elements.setupScreen.hidden = false;
+        elements.modeScreen.hidden = false;
+        elements.setupScreen.hidden = true;
         elements.setupError.textContent = "";
         renderSetupPlayers();
       });
