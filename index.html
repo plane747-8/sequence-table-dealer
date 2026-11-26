@@ -1,0 +1,1376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101c2a">
+  <title>Sequence | Table Dealer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f5f2e9;
+      --muted: #a7b0b4;
+      --navy: #101c2a;
+      --panel: #172635;
+      --panel-light: #1d3040;
+      --line: rgba(235, 220, 184, .15);
+      --gold: #d9b66f;
+      --gold-bright: #f0d28e;
+      --green: #548776;
+      --red: #bd4d4a;
+      --black-suit: #202630;
+      --card-shadow: 0 24px 55px rgba(0, 0, 0, .34), 0 4px 12px rgba(0, 0, 0, .22);
+      font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 12% 2%, rgba(79, 119, 108, .14), transparent 34rem),
+        radial-gradient(ellipse at 98% 90%, rgba(163, 126, 62, .12), transparent 32rem),
+        repeating-linear-gradient(128deg, transparent 0 17px, rgba(255,255,255,.012) 18px 19px),
+        var(--navy);
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--gold-bright); outline-offset: 3px; }
+    button:disabled { cursor: not-allowed; opacity: .46; }
+    [hidden] { display: none !important; }
+    .app-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 26px 0 42px; }
+    .masthead { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 4px 0 24px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(217,182,111,.65); border-radius: 50%; color: var(--gold-bright); font: 25px Georgia, serif; }
+    .brand-name { font: 600 18px Georgia, serif; letter-spacing: .04em; }
+    .brand-subtitle, .eyebrow { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; }
+    .brand-subtitle { margin-top: 4px; }
+    .offline-label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+    .offline-label::before { width: 7px; height: 7px; border-radius: 50%; background: #71ac8d; content: ""; box-shadow: 0 0 10px rgba(113,172,141,.55); }
+    .screen { animation: rise-in .38s ease both; }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+    .setup-layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 58px; align-items: start; padding: 56px 0 20px; }
+    .setup-copy { padding-top: 10px; }
+    .eyebrow { color: var(--gold); }
+    h1, h2, p { margin-top: 0; }
+    h1 { max-width: 590px; margin: 15px 0 16px; font: 400 clamp(36px, 5vw, 58px)/1.08 Georgia, "Times New Roman", serif; letter-spacing: -.025em; }
+    .intro { max-width: 530px; margin-bottom: 0; color: #b7c0c2; font-size: 15px; line-height: 1.7; }
+    .setup-panel { padding: 25px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(145deg, rgba(31,49,63,.95), rgba(20,34,47,.95)); box-shadow: 0 18px 45px rgba(0,0,0,.14); }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .panel-heading h2 { margin: 0; font: 21px Georgia, serif; }
+    .count-label { color: var(--gold-bright); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .player-list { display: grid; gap: 9px; max-height: 390px; overflow: auto; padding: 2px 3px 4px 0; }
+    .player-row { display: grid; grid-template-columns: 31px minmax(0, 1fr) 34px; align-items: center; gap: 9px; }
+    .player-number { color: #829098; font: 13px Georgia, serif; text-align: center; }
+    .player-input, .custom-size {
+      width: 100%; min-width: 0; height: 42px; border: 1px solid rgba(220,226,218,.15); border-radius: 4px;
+      padding: 0 12px; color: var(--ink); background: rgba(6,16,24,.34); font-size: 14px;
+    }
+    .player-input::placeholder { color: #829098; }
+    .icon-button { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: #c0c8c5; cursor: pointer; font-size: 18px; transition: background .16s, color .16s; }
+    .icon-button:hover:not(:disabled) { color: var(--gold-bright); background: rgba(217,182,111,.1); }
+    .setup-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 13px 0 20px; }
+    .text-button { padding: 6px 0; border: 0; color: var(--gold-bright); background: none; cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: .05em; }
+    .text-button:hover:not(:disabled) { color: #fff0c8; }
+    .hand-setting { min-height: 55px; margin-bottom: 18px; padding: 12px 13px; border-left: 2px solid var(--gold); background: rgba(217,182,111,.06); }
+    .hand-setting-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .hand-setting label { color: #d3d9d4; font-size: 12px; }
+    .hand-setting-note { margin: 6px 0 0; color: #8f9da0; font-size: 11px; line-height: 1.5; }
+    .custom-size { width: 70px; height: 34px; padding: 0 8px; text-align: center; }
+    .primary-button, .secondary-button, .quiet-button {
+      min-height: 46px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 800; letter-spacing: .09em; transition: transform .16s, background .16s, border-color .16s;
+    }
+    .primary-button { width: 100%; border: 1px solid #efcf83; color: #17212a; background: linear-gradient(110deg, #efd28f, #d6b46d); box-shadow: 0 6px 20px rgba(217,182,111,.13); }
+    .primary-button:hover:not(:disabled) { transform: translateY(-1px); background: #f6dda0; }
+    .secondary-button { border: 1px solid rgba(217,182,111,.52); padding: 0 16px; color: var(--gold-bright); background: rgba(217,182,111,.07); }
+    .secondary-button:hover:not(:disabled) { background: rgba(217,182,111,.15); }
+    .quiet-button { border: 1px solid var(--line); padding: 0 13px; color: #c0c8c5; background: transparent; }
+    .quiet-button:hover:not(:disabled) { border-color: rgba(217,182,111,.5); color: var(--gold-bright); }
+    .error-message { min-height: 17px; margin: 0 0 8px; color: #f1a49a; font-size: 12px; }
+    .setup-footnote { margin: 20px 0 0; color: #829098; font-size: 11px; line-height: 1.6; }
+    .game-topline { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 24px 0 17px; }
+    .game-topline .eyebrow { margin: 0; }
+    .game-controls { display: flex; gap: 8px; }
+    .game-controls button { min-height: 36px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 0 20px; border: 1px solid var(--line); border-radius: 5px; background: rgba(18,33,46,.78); }
+    .stat { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 59px; padding: 0 19px; }
+    .stat + .stat { border-left: 1px solid var(--line); }
+    .stat-label { color: #9ca9aa; font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    .stat-value { color: var(--gold-bright); font: 23px Georgia, serif; font-variant-numeric: tabular-nums; }
+    .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 275px; gap: 19px; align-items: stretch; }
+    .table-area { min-height: 580px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 35px 24px 24px; border: 1px solid rgba(230,216,184,.15); border-radius: 7px; background: radial-gradient(ellipse at 50% 46%, rgba(73,107,91,.18), transparent 54%), linear-gradient(145deg, rgba(24,44,55,.98), rgba(15,29,39,.98)); overflow: hidden; }
+    .turn-label { margin: 0 0 8px; color: var(--gold); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    .player-name { margin: 0 0 5px; font: 31px Georgia, serif; text-align: center; }
+    .turn-hint { max-width: 390px; min-height: 21px; margin: 0 0 22px; color: #aab5b4; font-size: 13px; line-height: 1.55; text-align: center; }
+    .card-slot { display: grid; width: 226px; height: 318px; place-items: center; }
+    .playing-card {
+      position: relative; display: flex; width: 214px; height: 300px; flex-direction: column; justify-content: space-between;
+      border: 1px solid #d6d4ce; border-radius: 13px; padding: 13px 15px; color: var(--black-suit); background: linear-gradient(145deg, #fff, #f8f6f0);
+      box-shadow: var(--card-shadow); animation: card-in .32s cubic-bezier(.2,.8,.2,1) both;
+    }
+    @keyframes card-in { from { opacity: 0; transform: translateY(9px) rotate(1deg) scale(.97); } to { opacity: 1; transform: translateY(0) rotate(0) scale(1); } }
+    .playing-card.red { color: #b52e35; }
+    .card-corner { width: 30px; text-align: center; font: 27px/1 Georgia, serif; }
+    .card-corner small { display: block; margin-top: 1px; font: 18px/1 Georgia, serif; }
+    .card-corner.bottom { align-self: flex-end; transform: rotate(180deg); }
+    .card-center { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font: 100px/1 Georgia, serif; }
+    .card-center.jack { font: 47px/1 Georgia, serif; }
+    .jack-label { margin-top: 9px; border: 1px solid currentColor; border-radius: 2px; padding: 5px 10px 4px; font: 800 10px/1 "Avenir Next", Avenir, sans-serif; letter-spacing: .16em; }
+    .hand-navigation { display: flex; align-items: center; justify-content: center; gap: 16px; min-height: 44px; margin: 8px 0 13px; }
+    .hand-position { min-width: 62px; color: #aeb8b7; font-size: 11px; text-align: center; }
+    .card-nav { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 50%; color: var(--gold-bright); background: rgba(255,255,255,.035); cursor: pointer; font-size: 18px; }
+    .card-nav:hover { background: rgba(217,182,111,.14); }
+    .table-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+    .table-actions .primary-button { width: auto; padding: 0 18px; }
+    .privacy-note { margin: 18px 0 0; color: #849397; font-size: 10px; text-align: center; }
+    .side-panel { padding: 20px 17px; border: 1px solid var(--line); border-radius: 6px; background: rgba(19,34,47,.85); }
+    .side-panel h2 { margin: 0 0 4px; font: 19px Georgia, serif; }
+    .side-caption { margin: 0 0 16px; color: #87969a; font-size: 11px; }
+    .roster { display: grid; gap: 5px; }
+    .roster-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 9px 8px; border: 1px solid transparent; border-radius: 3px; color: #cbd1ce; }
+    .roster-row.active { border-color: rgba(217,182,111,.32); color: var(--gold-bright); background: rgba(217,182,111,.07); }
+    .roster-name { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .roster-hand { display: inline-flex; align-items: center; gap: 6px; color: #8fa0a1; font-size: 10px; white-space: nowrap; }
+    .eye-icon { font-size: 12px; }
+    .dashboard-note { margin: 17px 0 0; padding-top: 14px; border-top: 1px solid var(--line); color: #87969a; font-size: 10px; line-height: 1.6; }
+    .selector { width: min(480px, 100%); margin-top: 5px; animation: rise-in .25s ease both; }
+    .selector-title { margin: 0 0 7px; font: 23px Georgia, serif; text-align: center; }
+    .selector-instruction { margin: 0 0 17px; color: #bbc3c0; font-size: 13px; text-align: center; }
+    .selector-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 245px; overflow-y: auto; padding: 2px 4px 4px; }
+    .selector-player { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 46px; border: 1px solid rgba(226,224,208,.16); border-radius: 4px; padding: 0 12px; color: #e5e6df; background: rgba(255,255,255,.035); cursor: pointer; text-align: left; transition: border-color .16s, background .16s; }
+    .selector-player:hover { border-color: rgba(217,182,111,.62); background: rgba(217,182,111,.1); }
+    .selector-player.expected { border-color: rgba(217,182,111,.52); }
+    .selector-player small { color: #8f9e9f; font-size: 9px; white-space: nowrap; }
+    .selector-lock { margin: 12px 0 0; color: #87969a; font-size: 10px; text-align: center; }
+    .game-message { min-height: 15px; margin: 12px 0 0; color: #f1a49a; font-size: 11px; text-align: center; }
+    .ended-title { margin: 0 0 10px; font: 36px Georgia, serif; text-align: center; }
+    .ended-copy { max-width: 350px; margin: 0 0 20px; color: #aeb8b7; font-size: 13px; line-height: 1.6; text-align: center; }
+    .shuffle-overlay { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(7,14,20,.89); backdrop-filter: blur(7px); }
+    .shuffle-content { width: min(390px, 100%); text-align: center; }
+    .shuffle-title { margin: 0 0 8px; color: var(--gold-bright); font: 25px Georgia, serif; letter-spacing: .05em; }
+    .shuffle-subtitle { margin: 0; color: #9eacab; font-size: 12px; }
+    .shuffle-stage { position: relative; display: grid; width: 230px; height: 195px; place-items: center; margin: 8px auto 17px; }
+    .shuffle-card { position: absolute; width: 75px; height: 108px; border: 1px solid #dedbd1; border-radius: 7px; background: linear-gradient(140deg, #faf9f4, #d8d5ca); box-shadow: 0 8px 18px rgba(0,0,0,.28); animation: shuffle-flight .48s ease-in-out infinite alternate; }
+    .shuffle-card::after { position: absolute; inset: 5px; border: 1px solid rgba(25,49,57,.3); border-radius: 3px; background: repeating-linear-gradient(45deg, rgba(35,69,76,.8) 0 2px, transparent 2px 5px); content: ""; }
+    .shuffle-card:nth-child(1) { --x: -61px; --r: -17deg; animation-delay: -.14s; }
+    .shuffle-card:nth-child(2) { --x: -34px; --r: 12deg; animation-delay: -.31s; }
+    .shuffle-card:nth-child(3) { --x: 0px; --r: -5deg; animation-delay: -.05s; }
+    .shuffle-card:nth-child(4) { --x: 35px; --r: 18deg; animation-delay: -.24s; }
+    .shuffle-card:nth-child(5) { --x: 63px; --r: -13deg; animation-delay: -.39s; }
+    @keyframes shuffle-flight { from { transform: translate(var(--x), 7px) rotate(var(--r)); } to { transform: translate(calc(var(--x) * -1), -17px) rotate(calc(var(--r) * -1)); } }
+    .shuffle-overlay.ready .shuffle-card { animation: none; transform: translateY(0) rotate(0); transition: transform .25s; }
+    .toast { position: fixed; z-index: 30; right: 20px; bottom: 20px; max-width: min(380px, calc(100% - 40px)); border: 1px solid rgba(217,182,111,.42); border-radius: 4px; padding: 12px 16px; color: #f4e3b8; background: #203342; box-shadow: 0 12px 35px rgba(0,0,0,.32); font-size: 12px; animation: rise-in .2s ease both; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; clip-path: inset(50%); }
+    .team-setup { width: min(850px, 100%); margin: 0 auto; padding: 39px 0 10px; }
+    .team-setup-heading { margin-bottom: 25px; }
+    .team-setup-heading h1 { margin-bottom: 10px; }
+    .team-rules-row { display: flex; align-items: center; gap: 14px; margin-bottom: 17px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 5px; background: rgba(18,33,46,.78); }
+    .team-rules-row label { color: #e4e6df; font-size: 12px; font-weight: 700; }
+    .team-count-select { min-width: 120px; height: 38px; border: 1px solid rgba(220,226,218,.2); border-radius: 3px; padding: 0 9px; color: var(--ink); background: #172635; }
+    .team-rules-note { color: #8f9da0; font-size: 11px; line-height: 1.5; }
+    .team-config-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .team-config-card { min-width: 0; border: 1px solid var(--line); border-top: 3px solid var(--team-color, var(--gold)); border-radius: 4px; padding: 13px; background: rgba(20,36,49,.9); }
+    .team-config-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .team-config-head strong { overflow: hidden; color: #aab6b5; font-size: 10px; letter-spacing: .12em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+    .team-size-badge { flex: 0 0 auto; color: var(--gold-bright); font-size: 10px; }
+    .team-name-input { width: 100%; min-width: 0; height: 37px; border: 1px solid rgba(220,226,218,.15); border-radius: 3px; padding: 0 9px; color: var(--ink); background: rgba(6,16,24,.34); font-size: 12px; }
+    .team-color-line { display: flex; align-items: center; gap: 8px; margin-top: 9px; color: #95a3a4; font-size: 10px; }
+    .team-color-input { width: 31px; height: 27px; border: 1px solid rgba(255,255,255,.2); border-radius: 3px; padding: 2px; background: #172635; cursor: pointer; }
+    .assignment-panel { margin-bottom: 13px; border: 1px solid var(--line); border-radius: 5px; padding: 15px 16px; background: rgba(18,33,46,.68); }
+    .assignment-panel .panel-heading { margin-bottom: 11px; }
+    .team-player-list { display: grid; gap: 7px; }
+    .team-player-row { display: grid; grid-template-columns: minmax(110px, 1fr) auto; align-items: center; gap: 10px; border-bottom: 1px solid rgba(235,220,184,.08); padding: 8px 0; }
+    .team-player-row:last-child { border-bottom: 0; }
+    .team-player-name { overflow: hidden; color: #dfe3dd; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .team-choices { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+    .team-choice { min-height: 30px; border: 1px solid rgba(220,226,218,.16); border-radius: 3px; padding: 0 9px; color: #b7c1bf; background: rgba(255,255,255,.025); cursor: pointer; font-size: 10px; }
+    .team-choice:hover { border-color: var(--team-color); }
+    .team-choice.selected { border-color: var(--team-color); color: #fff; background: color-mix(in srgb, var(--team-color) 25%, #172635); }
+    .team-warning { margin: 11px 0; border-left: 2px solid #e1b665; padding: 10px 12px; color: #e7cd96; background: rgba(217,182,111,.08); font-size: 11px; line-height: 1.55; }
+    .team-summary-label { margin: 18px 0 8px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .team-confirm-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .team-summary-card { min-width: 0; border-left: 3px solid var(--team-color); padding: 10px 11px; background: rgba(255,255,255,.035); }
+    .team-summary-title { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 5px; color: #e9e9df; font-size: 11px; font-weight: 700; }
+    .team-summary-members { overflow-wrap: anywhere; color: #9daaa9; font-size: 10px; line-height: 1.55; }
+    .team-footer-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 17px; }
+    .team-footer-actions .primary-button { width: auto; min-width: 250px; padding: 0 17px; }
+    .game-tabs { display: flex; gap: 4px; margin: 19px 0 0; border-bottom: 1px solid var(--line); }
+    .game-tab { min-width: 116px; min-height: 39px; border: 0; border-bottom: 2px solid transparent; padding: 0 14px; color: #91a0a1; background: transparent; cursor: pointer; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+    .game-tab.active { border-bottom-color: var(--gold); color: var(--gold-bright); }
+    .board-panel, .scoreboard-view { padding: 23px 0 8px; }
+    .board-heading { display: flex; justify-content: space-between; align-items: end; gap: 18px; margin-bottom: 14px; }
+    .board-heading h2 { margin: 5px 0 0; font: 25px Georgia, serif; }
+    .board-heading p { max-width: 390px; margin: 0; color: #9ba8a8; font-size: 11px; line-height: 1.5; text-align: right; }
+    .board-scroll { overflow-x: auto; padding: 0 0 8px; }
+    .sequence-board { display: grid; width: min(100%, 760px); min-width: 550px; aspect-ratio: 1; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr)); gap: 3px; margin: 0 auto; border: 6px solid #295449; border-radius: 5px; padding: 4px; background: #295449; box-shadow: 0 16px 38px rgba(0,0,0,.25); }
+    .board-tile { position: relative; display: grid; min-width: 0; place-items: center; overflow: hidden; border: 1px solid rgba(39,51,46,.15); border-radius: 2px; color: #26312d; background: #e9e5d8; cursor: default; }
+    .board-tile.legal { cursor: pointer; }
+    .board-tile.legal:hover, .board-tile.pending { z-index: 1; border: 2px solid var(--gold-bright); box-shadow: 0 0 0 2px rgba(240,210,142,.3); }
+    .board-tile:disabled { opacity: 1; }
+    .board-card-label { display: grid; justify-items: center; gap: 1px; font: 700 clamp(7px, 1.3vw, 12px)/1 Georgia, serif; }
+    .board-card-label.red { color: #af3a40; }
+    .board-card-label.black { color: #232a30; }
+    .board-tile.free { border-color: rgba(241,209,139,.55); color: #f2d89e; background: #365e52; }
+    .free-mark { font: 700 clamp(6px, 1vw, 10px)/1.1 "Avenir Next", Avenir, sans-serif; letter-spacing: .06em; text-align: center; }
+    .board-token { position: absolute; inset: 20%; display: grid; place-items: center; border: 2px solid rgba(255,255,255,.9); border-radius: 50%; color: #fff; background: var(--token-color); box-shadow: 0 2px 6px rgba(0,0,0,.36); font-size: clamp(7px, 1.2vw, 12px); font-weight: 900; }
+    .board-tile.sequence-locked::after { position: absolute; inset: 0; border: 2px solid rgba(246,224,164,.75); content: ""; pointer-events: none; }
+    .board-footnote { margin: 8px 0 0; color: #819092; font-size: 10px; text-align: center; }
+    .scoreboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .score-team { min-width: 0; border: 1px solid var(--line); border-top: 4px solid var(--team-color); border-radius: 5px; padding: 17px; background: rgba(20,36,49,.9); }
+    .score-team.winning { box-shadow: 0 0 0 1px var(--team-color), 0 0 25px color-mix(in srgb, var(--team-color) 20%, transparent); }
+    .score-team-head { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+    .score-team-name { margin: 0; overflow-wrap: anywhere; font: 19px Georgia, serif; }
+    .score-team-score { display: flex; align-items: baseline; gap: 5px; color: var(--team-color); font: 31px Georgia, serif; white-space: nowrap; }
+    .score-team-score small { color: #8e9b9d; font: 10px "Avenir Next", Avenir, sans-serif; }
+    .score-team-roster { display: grid; gap: 6px; margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .score-player { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #b6c0bd; font-size: 11px; }
+    .score-player small { color: #829194; font-size: 9px; }
+    .winner-banner { margin-top: 14px; border: 1px solid var(--gold); border-radius: 4px; padding: 13px; color: var(--gold-bright); background: rgba(217,182,111,.08); font: 18px Georgia, serif; text-align: center; }
+    .team-editor-dialog { width: min(720px, calc(100% - 24px)); max-height: min(90vh, 760px); overflow: auto; border: 1px solid rgba(217,182,111,.38); border-radius: 7px; padding: 23px; color: var(--ink); background: #132330; box-shadow: 0 28px 80px rgba(0,0,0,.62); }
+    .team-editor-dialog::backdrop { background: rgba(4,10,15,.78); backdrop-filter: blur(5px); }
+    .team-editor-form h2 { margin: 7px 0; font: 27px Georgia, serif; }
+    .team-editor-note { margin: 0 0 18px; color: #9ca9aa; font-size: 12px; line-height: 1.5; }
+    .team-editor-dialog .team-config-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .team-editor-dialog .team-player-list { margin-top: 7px; }
+    @media (max-width: 800px) {
+      .setup-layout { grid-template-columns: minmax(0,1fr) 300px; gap: 28px; }
+      .team-setup { width: min(100%, 850px); }
+      .game-layout { grid-template-columns: minmax(0,1fr) 240px; gap: 12px; }
+      .side-panel { padding: 17px 13px; }
+      .table-area { min-height: 560px; }
+    }
+    @media (max-width: 650px) {
+      .app-shell { width: min(100% - 28px, 520px); padding-top: 15px; }
+      .masthead { padding-bottom: 16px; }
+      .brand-mark { width: 36px; height: 36px; font-size: 22px; }
+      .brand-name { font-size: 16px; }
+      .offline-label { font-size: 10px; }
+      .setup-layout { grid-template-columns: 1fr; gap: 24px; padding-top: 33px; }
+      .team-setup { padding-top: 28px; }
+      .setup-copy { padding-top: 0; }
+      h1 { max-width: 480px; font-size: 41px; }
+      .intro { font-size: 13px; }
+      .setup-panel { padding: 20px; }
+      .game-topline { align-items: flex-start; padding-top: 17px; }
+      .game-controls { flex-wrap: wrap; justify-content: flex-end; }
+      .game-controls button { min-height: 32px; padding: 0 9px; font-size: 9px; }
+      .stats { margin-bottom: 12px; }
+      .stat { min-height: 52px; flex-direction: column; justify-content: center; gap: 3px; padding: 6px 4px; text-align: center; }
+      .stat-label { font-size: 8px; letter-spacing: .08em; }
+      .stat-value { font-size: 19px; }
+      .game-layout { grid-template-columns: 1fr; }
+      .table-area { min-height: 555px; padding: 27px 15px 20px; }
+      .player-name { font-size: 27px; }
+      .side-panel { padding: 16px; }
+      .roster { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .roster-row { padding: 8px 6px; }
+      .dashboard-note { margin-top: 12px; padding-top: 10px; }
+      .team-rules-row { flex-wrap: wrap; gap: 8px 12px; padding: 12px; }
+      .team-rules-note { flex-basis: 100%; }
+      .team-config-grid, .team-confirm-summary, .scoreboard-grid { grid-template-columns: 1fr; }
+      .team-player-row { grid-template-columns: 1fr; gap: 7px; }
+      .team-choices { justify-content: flex-start; }
+      .team-choice { min-height: 34px; }
+      .team-footer-actions { flex-direction: column-reverse; }
+      .team-footer-actions .primary-button { width: 100%; min-width: 0; }
+      .board-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .board-heading p { text-align: left; }
+      .team-editor-dialog { padding: 18px; }
+      .team-editor-dialog .team-config-grid { grid-template-columns: 1fr; }
+      .score-team { padding: 14px; }
+    }
+    @media (max-width: 370px) {
+      .app-shell { width: calc(100% - 20px); }
+      .game-controls { gap: 5px; }
+      .game-controls button { padding: 0 7px; letter-spacing: .04em; }
+      .playing-card { width: 194px; height: 274px; }
+      .card-slot { width: 206px; height: 291px; }
+      .card-center { font-size: 88px; }
+      .table-area { min-height: 530px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="masthead">
+      <div class="brand" aria-label="Sequence Table Dealer">
+        <div class="brand-mark" aria-hidden="true">S</div>
+        <div><div class="brand-name">Sequence</div><div class="brand-subtitle">Table dealer</div></div>
+      </div>
+      <div class="offline-label">Ready to play offline</div>
+    </header>
+
+    <section class="screen" id="setup-screen" aria-labelledby="setup-title">
+      <div class="setup-layout">
+        <div class="setup-copy">
+          <div class="eyebrow">A shared-table companion</div>
+          <h1 id="setup-title">Gather around.<br>We'll deal the cards.</h1>
+          <p class="intro">Set up your players, then pass one device around the table. Each hand stays private until its player is ready.</p>
+        </div>
+        <form class="setup-panel" id="setup-form">
+          <div class="panel-heading"><h2>Players</h2><span class="count-label" id="player-count">2 of 12</span></div>
+          <div class="player-list" id="player-list"></div>
+          <div class="setup-actions">
+            <button type="button" class="text-button" id="add-player">＋ ADD PLAYER</button>
+            <span class="eyebrow">2–12 seats</span>
+          </div>
+          <div class="hand-setting" id="hand-setting" hidden>
+            <div class="hand-setting-top">
+              <label for="custom-hand-size">Cards per player</label>
+              <input class="custom-size" id="custom-hand-size" type="number" min="1" max="10" value="5" inputmode="numeric">
+            </div>
+            <p class="hand-setting-note">Choose a starting hand size for this table.</p>
+          </div>
+          <p class="error-message" id="setup-error" role="alert"></p>
+          <button type="submit" class="primary-button" id="start-game">CHOOSE TEAMS</button>
+          <p class="setup-footnote">A standard Sequence deck contains 104 cards: two copies of every card, including eight special Jacks.</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="screen" id="teams-screen" aria-labelledby="teams-title" hidden>
+      <div class="team-setup">
+        <div class="team-setup-heading">
+          <div class="eyebrow">Before the deal</div>
+          <h1 id="teams-title">Build your teams.</h1>
+          <p class="intro">The list is seating order around the table. Assign every player yourself and alternate teams so teammates are not neighbors.</p>
+        </div>
+        <div class="team-rules-row">
+          <label for="team-count">Teams at this table</label>
+          <select id="team-count" class="team-count-select">
+            <option value="2">2 teams</option>
+            <option value="3">3 teams</option>
+          </select>
+          <span class="team-rules-note">Up to 3 teams; up to 6 players per team for 2 teams, or 4 for 3 teams.</span>
+        </div>
+        <div class="team-config-grid" id="team-config-list"></div>
+        <section class="assignment-panel" aria-labelledby="assignment-title">
+          <div class="panel-heading"><h2 id="assignment-title">Assign the players</h2><span class="count-label" id="assigned-count">0 assigned</span></div>
+          <div class="team-player-list" id="team-player-list"></div>
+        </section>
+        <div class="team-warning" id="team-warning" role="status" hidden></div>
+        <p class="team-summary-label">Team check</p>
+        <div class="team-confirm-summary" id="team-confirm-summary"></div>
+        <p class="error-message" id="team-error" role="alert"></p>
+        <div class="team-footer-actions">
+          <button type="button" class="quiet-button" id="back-to-players">BACK TO PLAYERS</button>
+          <button type="button" class="primary-button" id="confirm-teams">CONFIRM TEAMS &amp; START GAME</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="game-screen" aria-label="Sequence game" hidden>
+      <div class="game-topline">
+        <p class="eyebrow">The table is yours</p>
+        <div class="game-controls">
+          <button class="quiet-button" type="button" id="shuffle-button">⤨ &nbsp;SHUFFLE</button>
+          <button class="quiet-button" type="button" id="edit-teams-button">EDIT TEAMS</button>
+          <button class="quiet-button" type="button" id="restart-button">↻ &nbsp;RESTART</button>
+          <button class="quiet-button" type="button" id="end-button">END GAME</button>
+        </div>
+      </div>
+      <div class="stats" aria-label="Deck status">
+        <div class="stat"><span class="stat-label">Cards in deck</span><strong class="stat-value" id="deck-count">104</strong></div>
+        <div class="stat"><span class="stat-label">Discarded</span><strong class="stat-value" id="discard-count">0</strong></div>
+        <div class="stat"><span class="stat-label">At the table</span><strong class="stat-value" id="active-count">2</strong></div>
+      </div>
+      <div class="game-layout" id="game-layout">
+        <section class="table-area" aria-live="polite">
+          <p class="turn-label" id="turn-label">Private hand</p>
+          <h1 class="player-name" id="active-player-name">Player</h1>
+          <p class="turn-hint" id="turn-hint"></p>
+          <div class="card-slot" id="card-slot" aria-label="Private card"></div>
+          <div class="hand-navigation" id="hand-navigation" hidden>
+            <button type="button" class="card-nav" id="previous-card" aria-label="Previous card">‹</button>
+            <span class="hand-position" id="hand-position">1 of 7</span>
+            <button type="button" class="card-nav" id="next-card" aria-label="Next card">›</button>
+          </div>
+          <div class="table-actions" id="reveal-actions" hidden>
+            <button type="button" class="primary-button" id="played-button">PLACE TOKEN &amp; GET NEXT CARD</button>
+            <button type="button" class="secondary-button" id="dead-card-button" hidden>NO LEGAL SPACE – DISCARD &amp; DRAW</button>
+            <button type="button" class="secondary-button" id="switch-button">SWITCH PLAYER</button>
+          </div>
+          <p class="privacy-note" id="privacy-note">Only the current player can see their hand.</p>
+          <div class="selector" id="player-selector" hidden>
+            <h2 class="selector-title">Pass the device</h2>
+            <p class="selector-instruction" id="selector-instruction">Press if you are [PLAYER NAME]</p>
+            <div class="selector-list" id="selector-list"></div>
+            <p class="selector-lock">Only tap your own name. No other hand is shown here.</p>
+            <p class="game-message" id="game-message" role="alert"></p>
+          </div>
+          <div class="selector" id="ended-panel" hidden>
+            <h2 class="ended-title">Game ended</h2>
+            <p class="ended-copy">Your hands have been cleared from the table. Set up a fresh game whenever you're ready.</p>
+            <button type="button" class="primary-button" id="new-game-button">SET UP A NEW GAME</button>
+          </div>
+        </section>
+        <aside class="side-panel" aria-label="Players and hand sizes">
+          <h2>At this table</h2>
+          <p class="side-caption">Private hands stay hidden</p>
+          <div class="roster" id="roster"></div>
+          <p class="dashboard-note">Each player holds their dealt cards. Cards played are discarded and replaced from the shuffled deck.</p>
+        </aside>
+      </div>
+      <nav class="game-tabs" aria-label="Game views">
+        <button type="button" id="board-tab" class="game-tab active" aria-selected="true">BOARD</button>
+        <button type="button" id="scoreboard-tab" class="game-tab" aria-selected="false">SCOREBOARD</button>
+      </nav>
+      <section class="board-panel" id="board-panel" aria-labelledby="board-title">
+        <div class="board-heading">
+          <div><div class="eyebrow">Play a card, claim a space</div><h2 id="board-title">Sequence board</h2></div>
+          <p id="board-instruction">Choose a matching open space to place your team's token.</p>
+        </div>
+        <div class="board-scroll"><div class="sequence-board" id="sequence-board" role="grid" aria-label="Sequence board"></div></div>
+        <p class="board-footnote">Four corners are free spaces. Swipe sideways on smaller screens to see every space. Card positions match the standard printed board.</p>
+      </section>
+      <section class="scoreboard-view" id="scoreboard-view" aria-labelledby="scoreboard-title" hidden>
+        <div class="board-heading">
+          <div><div class="eyebrow">Live match</div><h2 id="scoreboard-title">Scoreboard</h2></div>
+          <p id="scoreboard-goal">First team to complete two sequences wins.</p>
+        </div>
+        <div class="scoreboard-grid" id="scoreboard-grid"></div>
+        <div class="winner-banner" id="winner-banner" hidden></div>
+      </section>
+    </section>
+  </main>
+  <dialog class="team-editor-dialog" id="team-editor">
+    <form method="dialog" class="team-editor-form" id="team-editor-form">
+      <div class="eyebrow">Organizer controls</div>
+      <h2>Pause &amp; edit teams</h2>
+      <p class="team-editor-note">Play is paused. Existing board tokens and scores remain with their teams.</p>
+      <div class="team-config-grid" id="edit-team-config-list"></div>
+      <div class="team-player-list" id="edit-team-player-list"></div>
+      <p class="error-message" id="edit-team-error" role="alert"></p>
+      <div class="team-footer-actions">
+        <button type="button" class="quiet-button" id="cancel-team-edit">CANCEL</button>
+        <button type="button" class="primary-button" id="save-team-edit">SAVE TEAM CHANGES</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="shuffle-overlay" id="shuffle-overlay" role="status" aria-live="assertive" hidden>
+    <div class="shuffle-content">
+      <div class="shuffle-stage" aria-hidden="true"><i class="shuffle-card"></i><i class="shuffle-card"></i><i class="shuffle-card"></i><i class="shuffle-card"></i><i class="shuffle-card"></i></div>
+      <h2 class="shuffle-title" id="shuffle-title">SHUFFLING DECK...</h2>
+      <p class="shuffle-subtitle" id="shuffle-subtitle">Mixing the cards for a fresh deal</p>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SUITS = [
+        { code: "H", symbol: "♥", name: "Hearts", red: true },
+        { code: "D", symbol: "♦", name: "Diamonds", red: true },
+        { code: "C", symbol: "♣", name: "Clubs", red: false },
+        { code: "S", symbol: "♠", name: "Spades", red: false },
+      ];
+      const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+      const BOARD_LAYOUT = [
+        ["FREE", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "FREE"],
+        ["6C", "5C", "4C", "3C", "2C", "AH", "KH", "QH", "10H", "10S"],
+        ["7C", "AS", "2D", "3D", "4D", "5D", "6D", "7D", "9H", "QS"],
+        ["8C", "KS", "6C", "5C", "4C", "3C", "2C", "8D", "8H", "KS"],
+        ["9C", "QS", "7C", "6H", "5H", "4H", "AH", "9D", "7H", "AS"],
+        ["10C", "10S", "8C", "7H", "2H", "3H", "KH", "10D", "6H", "2D"],
+        ["QC", "9S", "9C", "8H", "9H", "10H", "QH", "QD", "5H", "3D"],
+        ["KC", "8S", "10C", "QC", "KC", "AC", "AD", "KD", "4H", "4D"],
+        ["AC", "7S", "6S", "5S", "4S", "3S", "2S", "2H", "3H", "5D"],
+        ["FREE", "AD", "KD", "QD", "10D", "9D", "8D", "7D", "6D", "FREE"],
+      ];
+      const STANDARD_HANDS = { 2: 7, 3: 6, 4: 6, 6: 5, 8: 4, 9: 4, 10: 3, 11: 3, 12: 3 };
+      const byId = (id) => document.getElementById(id);
+      const elements = {
+        setupScreen: byId("setup-screen"), teamsScreen: byId("teams-screen"), gameScreen: byId("game-screen"), playerList: byId("player-list"),
+        playerCount: byId("player-count"), addPlayer: byId("add-player"), setupForm: byId("setup-form"),
+        setupError: byId("setup-error"), handSetting: byId("hand-setting"), customHandSize: byId("custom-hand-size"),
+        teamCount: byId("team-count"), teamConfigList: byId("team-config-list"), teamPlayerList: byId("team-player-list"),
+        assignedCount: byId("assigned-count"), teamWarning: byId("team-warning"), teamConfirmSummary: byId("team-confirm-summary"),
+        teamError: byId("team-error"), confirmTeams: byId("confirm-teams"), backToPlayers: byId("back-to-players"),
+        startButton: byId("start-game"), gameLayout: byId("game-layout"), deckCount: byId("deck-count"), discardCount: byId("discard-count"),
+        activeCount: byId("active-count"), turnLabel: byId("turn-label"), activePlayerName: byId("active-player-name"),
+        turnHint: byId("turn-hint"), cardSlot: byId("card-slot"), handNavigation: byId("hand-navigation"),
+        handPosition: byId("hand-position"), previousCard: byId("previous-card"), nextCard: byId("next-card"),
+        revealActions: byId("reveal-actions"), playedButton: byId("played-button"), switchButton: byId("switch-button"),
+        deadCardButton: byId("dead-card-button"), privacyNote: byId("privacy-note"), selector: byId("player-selector"), selectorInstruction: byId("selector-instruction"),
+        selectorList: byId("selector-list"), gameMessage: byId("game-message"), roster: byId("roster"),
+        shuffleButton: byId("shuffle-button"), restartButton: byId("restart-button"), endButton: byId("end-button"),
+        editTeamsButton: byId("edit-teams-button"), boardTab: byId("board-tab"), scoreboardTab: byId("scoreboard-tab"),
+        boardPanel: byId("board-panel"), boardInstruction: byId("board-instruction"), sequenceBoard: byId("sequence-board"),
+        scoreboardView: byId("scoreboard-view"), scoreboardGrid: byId("scoreboard-grid"), scoreboardGoal: byId("scoreboard-goal"),
+        winnerBanner: byId("winner-banner"), teamEditor: byId("team-editor"), editTeamConfigList: byId("edit-team-config-list"),
+        editTeamPlayerList: byId("edit-team-player-list"), editTeamError: byId("edit-team-error"),
+        cancelTeamEdit: byId("cancel-team-edit"), saveTeamEdit: byId("save-team-edit"),
+        shuffleOverlay: byId("shuffle-overlay"), shuffleTitle: byId("shuffle-title"), shuffleSubtitle: byId("shuffle-subtitle"),
+        toast: byId("toast"), endedPanel: byId("ended-panel"), newGameButton: byId("new-game-button"),
+      };
+
+      let state = null;
+      let playerNames = ["", ""];
+      let teamDraft = null;
+      let expectedPlayer = 0;
+      let toastTimer = 0;
+      let shuffleTimer = 0;
+      let locked = false;
+
+      function buildDeck() {
+        return SUITS.flatMap((suit) => RANKS.flatMap((rank) => [0, 1].map((copy) => ({
+          id: `${suit.code}-${rank}-${copy}`,
+          rank,
+          suit: suit.code,
+          symbol: suit.symbol,
+          suitName: suit.name,
+          red: suit.red,
+          jackType: rank === "J" ? (suit.code === "D" || suit.code === "C" ? "WILD" : "REMOVE") : null,
+        }))));
+      }
+
+      function randomInteger(maxExclusive) {
+        if (!globalThis.crypto || typeof globalThis.crypto.getRandomValues !== "function") {
+          throw new Error("This browser does not support secure card shuffling.");
+        }
+        const range = 0x100000000;
+        const limit = range - (range % maxExclusive);
+        const buffer = new Uint32Array(1);
+        let value;
+        do {
+          globalThis.crypto.getRandomValues(buffer);
+          value = buffer[0];
+        } while (value >= limit);
+        return value % maxExclusive;
+      }
+
+      function shuffle(cards) {
+        for (let index = cards.length - 1; index > 0; index -= 1) {
+          const swapIndex = randomInteger(index + 1);
+          [cards[index], cards[swapIndex]] = [cards[swapIndex], cards[index]];
+        }
+        return cards;
+      }
+
+      function buildBoard() {
+        return BOARD_LAYOUT.flatMap((row, rowIndex) => row.map((face, columnIndex) => {
+          const index = rowIndex * 10 + columnIndex;
+          if (face === "FREE") return { index, free: true, tokenTeamId: null };
+          const rank = face.slice(0, -1);
+          const suit = SUITS.find((item) => item.code === face.slice(-1));
+          return { index, free: false, rank, suit: suit.code, symbol: suit.symbol, red: suit.red, tokenTeamId: null };
+        }));
+      }
+
+      function assertDeckIntegrity() {
+        const allCards = [...state.deck, ...state.discard, ...state.players.flatMap((player) => player.hand)];
+        const ids = new Set(allCards.map((card) => card.id));
+        if (allCards.length !== 104 || ids.size !== 104) {
+          throw new Error(`Deck integrity failure: expected 104 unique physical cards, found ${allCards.length} cards and ${ids.size} IDs.`);
+        }
+      }
+
+      function handSizeFor(count) {
+        return STANDARD_HANDS[count] ?? Number(elements.customHandSize.value);
+      }
+
+      function renderSetupPlayers() {
+        elements.playerList.replaceChildren();
+        playerNames.forEach((name, index) => {
+          const row = document.createElement("div");
+          row.className = "player-row";
+          const number = document.createElement("span");
+          number.className = "player-number";
+          number.textContent = String(index + 1).padStart(2, "0");
+          const input = document.createElement("input");
+          input.className = "player-input";
+          input.type = "text";
+          input.maxLength = 24;
+          input.autocomplete = "off";
+          input.placeholder = `Player ${index + 1}`;
+          input.setAttribute("aria-label", `Player ${index + 1} name`);
+          input.value = name;
+          input.addEventListener("input", () => { playerNames[index] = input.value; });
+          const remove = document.createElement("button");
+          remove.className = "icon-button";
+          remove.type = "button";
+          remove.textContent = "−";
+          remove.setAttribute("aria-label", `Remove player ${index + 1}`);
+          remove.disabled = playerNames.length <= 2;
+          remove.addEventListener("click", () => {
+            playerNames.splice(index, 1);
+            renderSetupPlayers();
+          });
+          row.append(number, input, remove);
+          elements.playerList.append(row);
+        });
+        elements.playerCount.textContent = `${playerNames.length} of 12`;
+        elements.addPlayer.disabled = playerNames.length >= 12;
+        const custom = !Object.hasOwn(STANDARD_HANDS, playerNames.length);
+        elements.handSetting.hidden = !custom;
+        if (custom) {
+          elements.customHandSize.max = String(Math.floor(104 / playerNames.length));
+          elements.customHandSize.value = String(Math.min(Number(elements.customHandSize.value) || 5, Number(elements.customHandSize.max)));
+        }
+      }
+
+      const TEAM_PRESETS = [
+        { id: "team-1", name: "Red Team", color: "#c65c5d" },
+        { id: "team-2", name: "Blue Team", color: "#628dc2" },
+        { id: "team-3", name: "Green Team", color: "#5c9b78" },
+      ];
+
+      function sequenceGoalForPlayerCount(playerCount) {
+        return playerCount >= 4 ? 2 : 1;
+      }
+
+      function hasAdjacentTeammates(assignments) {
+        return assignments.some((teamId, index) => teamId && teamId === assignments[(index + 1) % assignments.length]);
+      }
+
+      function teamCounts(teams, assignments) {
+        return Object.fromEntries(teams.map((team) => [team.id, assignments.filter((teamId) => teamId === team.id).length]));
+      }
+
+      function renderTeamCards(teams, assignments, container, onChanged) {
+        const counts = teamCounts(teams, assignments);
+        container.replaceChildren();
+        teams.forEach((team, index) => {
+          const card = document.createElement("div");
+          card.className = "team-config-card";
+          card.style.setProperty("--team-color", team.color);
+          const heading = document.createElement("div");
+          heading.className = "team-config-head";
+          const label = document.createElement("strong");
+          label.textContent = `TEAM ${index + 1}`;
+          const count = document.createElement("span");
+          count.className = "team-size-badge";
+          count.textContent = `${counts[team.id]} ${counts[team.id] === 1 ? "player" : "players"}`;
+          heading.append(label, count);
+          const name = document.createElement("input");
+          name.className = "team-name-input";
+          name.type = "text";
+          name.maxLength = 20;
+          name.value = team.name;
+          name.setAttribute("aria-label", `Team ${index + 1} name`);
+          name.addEventListener("input", () => { team.name = name.value; });
+          name.addEventListener("change", onChanged);
+          const colorLine = document.createElement("label");
+          colorLine.className = "team-color-line";
+          colorLine.textContent = "Team color";
+          const color = document.createElement("input");
+          color.className = "team-color-input";
+          color.type = "color";
+          color.value = team.color;
+          color.setAttribute("aria-label", `Team ${index + 1} color`);
+          color.addEventListener("input", () => {
+            team.color = color.value;
+            card.style.setProperty("--team-color", team.color);
+          });
+          color.addEventListener("change", onChanged);
+          colorLine.append(color);
+          card.append(heading, name, colorLine);
+          container.append(card);
+        });
+      }
+
+      function renderTeamAssignments(players, teams, assignments, container, onSelect) {
+        container.replaceChildren();
+        players.forEach((player, index) => {
+          const row = document.createElement("div");
+          row.className = "team-player-row";
+          const name = document.createElement("span");
+          name.className = "team-player-name";
+          name.textContent = `Seat ${index + 1} · ${player.name}`;
+          const choices = document.createElement("div");
+          choices.className = "team-choices";
+          teams.forEach((team) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `team-choice${assignments[index] === team.id ? " selected" : ""}`;
+            button.style.setProperty("--team-color", team.color);
+            button.textContent = team.name;
+            button.setAttribute("aria-pressed", String(assignments[index] === team.id));
+            button.addEventListener("click", () => onSelect(index, team.id));
+            choices.append(button);
+          });
+          row.append(name, choices);
+          container.append(row);
+        });
+      }
+
+      function renderTeamSummary(players, teams, assignments, container) {
+        container.replaceChildren();
+        const counts = teamCounts(teams, assignments);
+        teams.forEach((team) => {
+          const card = document.createElement("div");
+          card.className = "team-summary-card";
+          card.style.setProperty("--team-color", team.color);
+          const title = document.createElement("div");
+          title.className = "team-summary-title";
+          const name = document.createElement("span");
+          name.textContent = team.name || "Unnamed team";
+          const count = document.createElement("span");
+          count.textContent = String(counts[team.id]);
+          title.append(name, count);
+          const members = document.createElement("div");
+          members.className = "team-summary-members";
+          const memberNames = players.filter((_, index) => assignments[index] === team.id).map((player) => player.name);
+          members.textContent = memberNames.length ? memberNames.join(", ") : "No players assigned";
+          card.append(title, members);
+          container.append(card);
+        });
+      }
+
+      function renderTeamSetup() {
+        if (!teamDraft) return;
+        const assignments = teamDraft.assignments;
+        const assigned = assignments.filter(Boolean).length;
+        const counts = teamCounts(teamDraft.teams, assignments);
+        const sizes = Object.values(counts);
+        const balanced = sizes.every((count) => count === sizes[0]);
+        const adjacentTeammates = hasAdjacentTeammates(assignments);
+        const allNamed = teamDraft.teams.every((team) => team.name.trim());
+        renderTeamCards(teamDraft.teams, assignments, elements.teamConfigList, renderTeamSetup);
+        renderTeamAssignments(teamDraft.players, teamDraft.teams, assignments, elements.teamPlayerList, (playerIndex, teamId) => {
+          teamDraft.assignments[playerIndex] = teamId;
+          renderTeamSetup();
+        });
+        renderTeamSummary(teamDraft.players, teamDraft.teams, assignments, elements.teamConfirmSummary);
+        elements.assignedCount.textContent = `${assigned} of ${teamDraft.players.length} assigned`;
+        elements.confirmTeams.disabled = assigned !== teamDraft.players.length || !allNamed || adjacentTeammates;
+        elements.teamWarning.hidden = false;
+        if (assigned !== teamDraft.players.length) {
+          elements.teamWarning.textContent = "Assign every player to a team before confirming the deal.";
+        } else if (adjacentTeammates) {
+          elements.teamWarning.textContent = "Teammates cannot sit side by side. Change the assignments to alternate teams around the table.";
+        } else if (!balanced) {
+          elements.teamWarning.textContent = "These teams are uneven. Sequence is designed for equal-sized teams; you can continue with this casual setup.";
+        } else if (teamDraft.players.length === 3 && teamDraft.teams.length === 3) {
+          elements.teamWarning.textContent = "Three-player free-for-all: each player is assigned to their own team.";
+        } else {
+          elements.teamWarning.hidden = true;
+          elements.teamWarning.textContent = "";
+        }
+        elements.teamError.textContent = allNamed ? "" : "Enter a name for every team.";
+      }
+
+      function openTeamSetup(names, handSize) {
+        const teamCount = names.length === 3 ? 3 : 2;
+        elements.teamCount.querySelector('option[value="3"]').disabled = names.length < 3;
+        teamDraft = {
+          players: names.map((name) => ({ name })),
+          teams: TEAM_PRESETS.slice(0, teamCount).map((team) => ({ ...team })),
+          assignments: names.map(() => null),
+          handSize,
+        };
+        elements.teamCount.value = String(teamCount);
+        elements.setupScreen.hidden = true;
+        elements.teamsScreen.hidden = false;
+        renderTeamSetup();
+      }
+
+      function validateSetup() {
+        const names = playerNames.map((name) => name.trim());
+        if (names.some((name) => !name)) return "Enter a name for every player before dealing.";
+        if (new Set(names.map((name) => name.toLocaleLowerCase())).size !== names.length) return "Give each player a different name so the private handoff is clear.";
+        const handSize = handSizeFor(names.length);
+        if (!Number.isInteger(handSize) || handSize < 1 || handSize * names.length > 104) return "Choose a hand size that fits in the 104-card deck.";
+        return "";
+      }
+
+      function createGame(names, handSize, teams, assignments) {
+        const deck = shuffle(buildDeck());
+        const players = names.map((name, index) => ({ name, hand: [], teamId: assignments[index] }));
+        for (let cardIndex = 0; cardIndex < handSize; cardIndex += 1) {
+          for (const player of players) player.hand.push(deck.pop());
+        }
+        state = {
+          deck,
+          discard: [],
+          players,
+          handSize,
+          teams: teams.map((team) => ({ ...team, score: 0 })),
+          board: buildBoard(),
+          sequences: [],
+          pendingMove: null,
+          winnerTeamId: null,
+          view: "board",
+          phase: "select",
+          activePlayer: null,
+          selectedCard: 0,
+        };
+        expectedPlayer = 0;
+        assertDeckIntegrity();
+      }
+
+      function setPhase(phase) {
+        if (!state) return;
+        state.phase = phase;
+        if (phase === "select") {
+          state.activePlayer = null;
+          state.selectedCard = 0;
+          elements.cardSlot.replaceChildren();
+        }
+        renderGame();
+      }
+
+      function beginShuffleAnimation(title, subtitle, finish) {
+        locked = true;
+        elements.shuffleOverlay.hidden = false;
+        elements.shuffleOverlay.classList.remove("ready");
+        elements.shuffleTitle.textContent = title;
+        elements.shuffleSubtitle.textContent = subtitle;
+        window.clearTimeout(shuffleTimer);
+        shuffleTimer = window.setTimeout(() => {
+          elements.shuffleOverlay.classList.add("ready");
+          elements.shuffleTitle.textContent = "DECK READY!";
+          elements.shuffleSubtitle.textContent = "Pass the device to the next player.";
+          shuffleTimer = window.setTimeout(() => {
+            elements.shuffleOverlay.hidden = true;
+            locked = false;
+            finish();
+          }, 550);
+        }, 2000);
+      }
+
+      function startGame(names, handSize, teams, assignments) {
+        playerNames = [...names];
+        createGame(playerNames, handSize, teams, assignments);
+        elements.setupScreen.hidden = true;
+        elements.teamsScreen.hidden = true;
+        elements.gameScreen.hidden = false;
+        renderGame();
+        beginShuffleAnimation("SHUFFLING DECK...", "Mixing all 104 cards before the deal", renderGame);
+      }
+
+      function showToast(message) {
+        elements.toast.textContent = message;
+        elements.toast.hidden = false;
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => { elements.toast.hidden = true; }, 2800);
+      }
+
+      function renderCard(card) {
+        const playingCard = document.createElement("div");
+        playingCard.className = `playing-card${card.red ? " red" : ""}`;
+        playingCard.setAttribute("role", "img");
+        const jackDescription = card.jackType ? `, ${card.jackType}` : "";
+        playingCard.setAttribute("aria-label", `${card.rank} of ${card.suitName}${jackDescription}`);
+        const top = document.createElement("div");
+        top.className = "card-corner";
+        top.innerHTML = `${card.rank}<small>${card.symbol}</small>`;
+        const center = document.createElement("div");
+        center.className = `card-center${card.jackType ? " jack" : ""}`;
+        if (card.jackType) {
+          const jack = document.createElement("span");
+          jack.textContent = "J";
+          const ability = document.createElement("span");
+          ability.className = "jack-label";
+          ability.textContent = card.jackType;
+          center.append(jack, ability);
+        } else {
+          center.textContent = card.symbol;
+        }
+        const bottom = document.createElement("div");
+        bottom.className = "card-corner bottom";
+        bottom.innerHTML = `${card.rank}<small>${card.symbol}</small>`;
+        playingCard.append(top, center, bottom);
+        return playingCard;
+      }
+
+      function isSequenceLocked(index) {
+        return state.sequences.some((sequence) => sequence.cells.includes(index));
+      }
+
+      function legalMovesForActiveCard() {
+        if (!state || state.phase !== "reveal" || state.winnerTeamId) return [];
+        const player = state.players[state.activePlayer];
+        const card = player.hand[state.selectedCard];
+        if (card.jackType === "WILD") {
+          return state.board.filter((tile) => !tile.free && !tile.tokenTeamId).map((tile) => tile.index);
+        }
+        if (card.jackType === "REMOVE") {
+          return state.board
+            .filter((tile) => tile.tokenTeamId && tile.tokenTeamId !== player.teamId && !isSequenceLocked(tile.index))
+            .map((tile) => tile.index);
+        }
+        return state.board
+          .filter((tile) => !tile.free && !tile.tokenTeamId && tile.rank === card.rank && tile.suit === card.suit)
+          .map((tile) => tile.index);
+      }
+
+      function renderBoard() {
+        if (!state) return;
+        const legalMoves = new Set(legalMovesForActiveCard());
+        const revealing = state.phase === "reveal" && !state.winnerTeamId;
+        const card = revealing ? state.players[state.activePlayer].hand[state.selectedCard] : null;
+        if (revealing && card) {
+          if (card.jackType === "WILD") elements.boardInstruction.textContent = "Two-eyed Jack: choose any open space for your team's token.";
+          else if (card.jackType === "REMOVE") elements.boardInstruction.textContent = legalMoves.size
+            ? "One-eyed Jack: choose an unprotected opponent token to remove."
+            : "No removable opponent token. Discard this dead card to draw a replacement.";
+          else elements.boardInstruction.textContent = legalMoves.size
+            ? `Choose an open ${card.rank} ${card.suitName} space to place your team's token.`
+            : "Both matching spaces are occupied. Discard this dead card to draw a replacement.";
+        } else if (state.phase === "paused") {
+          elements.boardInstruction.textContent = "Play is paused while the organizer edits teams.";
+        } else if (state.winnerTeamId) {
+          const winner = state.teams.find((team) => team.id === state.winnerTeamId);
+          elements.boardInstruction.textContent = `${winner.name} completed the winning sequence count.`;
+        } else {
+          elements.boardInstruction.textContent = `Waiting for ${state.players[expectedPlayer].name} to reveal a card.`;
+        }
+        elements.sequenceBoard.replaceChildren();
+        state.board.forEach((tile) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `board-tile${tile.free ? " free" : ""}${legalMoves.has(tile.index) ? " legal" : ""}${state.pendingMove === tile.index ? " pending" : ""}${isSequenceLocked(tile.index) ? " sequence-locked" : ""}`;
+          button.disabled = !legalMoves.has(tile.index) || locked;
+          button.dataset.index = String(tile.index);
+          button.setAttribute("role", "gridcell");
+          button.setAttribute("aria-label", tile.free
+            ? `Free corner ${tile.index + 1}`
+            : `${tile.rank} of ${SUITS.find((suit) => suit.code === tile.suit).name}${tile.tokenTeamId ? `, ${state.teams.find((team) => team.id === tile.tokenTeamId).name} token` : ""}`);
+          if (tile.free) {
+            const free = document.createElement("span");
+            free.className = "free-mark";
+            free.textContent = "FREE";
+            button.append(free);
+          } else {
+            const label = document.createElement("span");
+            const suit = SUITS.find((item) => item.code === tile.suit);
+            label.className = `board-card-label ${suit.red ? "red" : "black"}`;
+            const rank = document.createElement("span");
+            rank.textContent = tile.rank;
+            const symbol = document.createElement("span");
+            symbol.textContent = tile.symbol;
+            label.append(rank, symbol);
+            button.append(label);
+            if (tile.tokenTeamId) {
+              const team = state.teams.find((item) => item.id === tile.tokenTeamId);
+              const token = document.createElement("span");
+              token.className = "board-token";
+              token.style.setProperty("--token-color", team.color);
+              token.textContent = team.name.trim().charAt(0).toUpperCase();
+              button.append(token);
+            }
+          }
+          button.addEventListener("click", () => {
+            if (!legalMoves.has(tile.index)) return;
+            state.pendingMove = state.pendingMove === tile.index ? null : tile.index;
+            renderGame();
+          });
+          elements.sequenceBoard.append(button);
+        });
+      }
+
+      function completeSequences(teamId, placedIndex) {
+        const directions = [[1, 0], [0, 1], [1, 1], [1, -1]];
+        const newSequences = [];
+        for (const [rowStep, columnStep] of directions) {
+          for (let row = 0; row < 10; row += 1) {
+            for (let column = 0; column < 10; column += 1) {
+              const cells = [];
+              for (let offset = 0; offset < 5; offset += 1) {
+                const nextRow = row + rowStep * offset;
+                const nextColumn = column + columnStep * offset;
+                if (nextRow < 0 || nextRow >= 10 || nextColumn < 0 || nextColumn >= 10) break;
+                cells.push(nextRow * 10 + nextColumn);
+              }
+              if (cells.length !== 5 || !cells.includes(placedIndex)) continue;
+              if (!cells.every((index) => state.board[index].free || state.board[index].tokenTeamId === teamId)) continue;
+              const overlaps = [...state.sequences, ...newSequences].filter((sequence) => sequence.teamId === teamId)
+                .map((sequence) => sequence.cells.filter((index) => cells.includes(index)).length);
+              if (overlaps.some((count) => count > 1)) continue;
+              newSequences.push({ teamId, cells });
+            }
+          }
+        }
+        if (newSequences.length) {
+          state.sequences.push(...newSequences);
+          const team = state.teams.find((item) => item.id === teamId);
+          team.score += newSequences.length;
+          const goal = sequenceGoalForPlayerCount(state.players.length);
+          if (team.score >= goal) state.winnerTeamId = teamId;
+        }
+        return newSequences.length;
+      }
+
+      function renderScoreboard() {
+        if (!state) return;
+        const goal = sequenceGoalForPlayerCount(state.players.length);
+        elements.scoreboardGoal.textContent = `First team to ${goal} ${goal === 1 ? "sequence" : "sequences"} wins.`;
+        elements.scoreboardGrid.replaceChildren();
+        state.teams.forEach((team) => {
+          const card = document.createElement("section");
+          card.className = `score-team${state.winnerTeamId === team.id ? " winning" : ""}`;
+          card.style.setProperty("--team-color", team.color);
+          const head = document.createElement("div");
+          head.className = "score-team-head";
+          const name = document.createElement("h3");
+          name.className = "score-team-name";
+          name.textContent = team.name;
+          const score = document.createElement("div");
+          score.className = "score-team-score";
+          score.append(document.createTextNode(String(team.score)));
+          const target = document.createElement("small");
+          target.textContent = `/ ${goal}`;
+          score.append(target);
+          head.append(name, score);
+          const roster = document.createElement("div");
+          roster.className = "score-team-roster";
+          state.players.filter((player) => player.teamId === team.id).forEach((player) => {
+            const row = document.createElement("div");
+            row.className = "score-player";
+            const playerName = document.createElement("span");
+            playerName.textContent = player.name;
+            const hand = document.createElement("small");
+            hand.textContent = `${player.hand.length} hidden`;
+            row.append(playerName, hand);
+            roster.append(row);
+          });
+          card.append(head, roster);
+          elements.scoreboardGrid.append(card);
+        });
+        elements.winnerBanner.hidden = !state.winnerTeamId;
+        if (state.winnerTeamId) {
+          const winner = state.teams.find((team) => team.id === state.winnerTeamId);
+          elements.winnerBanner.textContent = `${winner.name} wins the game`;
+        }
+      }
+
+      function renderTeamEditor() {
+        const draft = state.teamEditDraft;
+        renderTeamCards(draft.teams, draft.assignments, elements.editTeamConfigList, renderTeamEditor);
+        renderTeamAssignments(state.players, draft.teams, draft.assignments, elements.editTeamPlayerList, (playerIndex, teamId) => {
+          draft.assignments[playerIndex] = teamId;
+          renderTeamEditor();
+        });
+        const counts = teamCounts(draft.teams, draft.assignments);
+        const sizes = Object.values(counts);
+        elements.editTeamError.textContent = hasAdjacentTeammates(draft.assignments)
+          ? "Teammates cannot sit side by side in the seating order. Change their assignments before saving."
+          : sizes.every((count) => count === sizes[0])
+            ? ""
+            : "Team sizes are uneven. Save anyway for this casual game, or move players to balance them.";
+      }
+
+      function openTeamEditor() {
+        if (!state || state.phase === "ended" || state.phase === "won" || locked) return;
+        state.previousPhase = state.phase;
+        state.phase = "paused";
+        state.teamEditDraft = {
+          teams: state.teams.map(({ id, name, color }) => ({ id, name, color })),
+          assignments: state.players.map((player) => player.teamId),
+        };
+        renderTeamEditor();
+        renderGame();
+        elements.teamEditor.showModal();
+      }
+
+      function closeTeamEditor(save) {
+        if (!state) return;
+        if (save) {
+          const draft = state.teamEditDraft;
+          if (draft.teams.some((team) => !team.name.trim())) {
+            elements.editTeamError.textContent = "Every team needs a name.";
+            return;
+          }
+          if (hasAdjacentTeammates(draft.assignments)) {
+            elements.editTeamError.textContent = "Teammates cannot sit side by side in the seating order.";
+            return;
+          }
+          state.teams = draft.teams.map((team) => ({
+            ...team,
+            score: state.teams.find((previous) => previous.id === team.id).score,
+          }));
+          state.players.forEach((player, index) => { player.teamId = draft.assignments[index]; });
+        }
+        state.teamEditDraft = null;
+        state.phase = state.previousPhase;
+        state.previousPhase = null;
+        elements.teamEditor.close();
+        renderGame();
+      }
+
+      function renderRoster() {
+        elements.roster.replaceChildren();
+        state.players.forEach((player, index) => {
+          const team = state.teams.find((item) => item.id === player.teamId);
+          const row = document.createElement("div");
+          row.className = `roster-row${state.phase === "reveal" && state.activePlayer === index ? " active" : ""}`;
+          const name = document.createElement("span");
+          name.className = "roster-name";
+          name.textContent = player.name;
+          const hand = document.createElement("span");
+          hand.className = "roster-hand";
+          hand.innerHTML = `<span class="team-dot" style="--team-color:${team.color}" aria-hidden="true"></span><span class="eye-icon" aria-hidden="true">▰</span>${player.hand.length} hidden`;
+          row.append(name, hand);
+          elements.roster.append(row);
+        });
+      }
+
+      function renderSelector() {
+        const target = state.players[expectedPlayer];
+        elements.selectorInstruction.textContent = `Press if you are ${target.name}`;
+        elements.selectorList.replaceChildren();
+        state.players.forEach((player, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `selector-player${index === expectedPlayer ? " expected" : ""}`;
+          const name = document.createElement("span");
+          name.textContent = player.name;
+          const cue = document.createElement("small");
+          cue.textContent = index === expectedPlayer ? "NEXT" : "PLAYER";
+          button.append(name, cue);
+          button.addEventListener("click", () => {
+            expectedPlayer = index;
+            state.activePlayer = index;
+            state.selectedCard = 0;
+            state.phase = "reveal";
+            elements.gameMessage.textContent = "";
+            renderGame();
+          });
+          elements.selectorList.append(button);
+        });
+      }
+
+      function renderGame() {
+        if (!state) return;
+        elements.deckCount.textContent = String(state.deck.length);
+        elements.discardCount.textContent = String(state.discard.length);
+        elements.activeCount.textContent = String(state.players.length);
+        const revealing = state.phase === "reveal" && state.activePlayer !== null && !state.winnerTeamId;
+        const selecting = state.phase === "select" && !state.winnerTeamId;
+        const paused = state.phase === "paused";
+        const ended = state.phase === "ended";
+        const won = state.phase === "won" && Boolean(state.winnerTeamId);
+        const winner = state.teams.find((team) => team.id === state.winnerTeamId);
+        elements.turnLabel.textContent = ended ? "Table cleared" : won ? "Match complete" : paused ? "Organizer pause" : selecting ? "Private handoff" : "Private hand";
+        elements.activePlayerName.textContent = revealing ? state.players[state.activePlayer].name
+          : selecting ? state.players[expectedPlayer].name
+            : paused ? "Teams paused" : won ? `${winner.name} wins` : "Game ended";
+        elements.turnHint.textContent = revealing
+          ? "Choose a card, then select a legal space on the board."
+          : selecting ? `Pass the device to ${state.players[expectedPlayer].name}, then select their name to reveal only their hand.`
+            : paused ? "The organizer can update team assignments without changing the board score."
+              : won ? `${winner.name} completed the winning number of sequences.` : "Hands and discard pile cleared.";
+        elements.cardSlot.replaceChildren();
+        if (revealing) {
+          const hand = state.players[state.activePlayer].hand;
+          if (hand.length) elements.cardSlot.append(renderCard(hand[state.selectedCard]));
+        }
+        elements.handNavigation.hidden = !revealing;
+        if (revealing) {
+          const hand = state.players[state.activePlayer].hand;
+          elements.handPosition.textContent = `${state.selectedCard + 1} of ${hand.length}`;
+          elements.previousCard.disabled = hand.length < 2;
+          elements.nextCard.disabled = hand.length < 2;
+        }
+        elements.revealActions.hidden = !revealing;
+        const legalMoveCount = revealing ? legalMovesForActiveCard().length : 0;
+        elements.playedButton.disabled = !revealing || state.pendingMove === null || locked;
+        elements.deadCardButton.hidden = !revealing || legalMoveCount > 0;
+        elements.deadCardButton.disabled = !revealing || locked;
+        elements.switchButton.disabled = !revealing || locked;
+        elements.privacyNote.hidden = !revealing;
+        elements.selector.hidden = !selecting;
+        elements.endedPanel.hidden = !ended && !won;
+        elements.endedPanel.querySelector(".ended-title").textContent = won ? `${winner.name} wins` : "Game ended";
+        const winGoal = sequenceGoalForPlayerCount(state.players.length);
+        elements.endedPanel.querySelector(".ended-copy").textContent = won
+          ? `${winner.name} completed ${winGoal === 2 ? "two" : "one"} Sequence${winGoal === 2 ? "s" : ""}. The board and scores remain available.`
+          : "Your hands have been cleared from the table. Set up a fresh game whenever you're ready.";
+        elements.gameLayout.hidden = state.view === "scoreboard";
+        elements.boardPanel.hidden = state.view === "scoreboard";
+        elements.scoreboardView.hidden = state.view !== "scoreboard";
+        elements.boardTab.classList.toggle("active", state.view === "board");
+        elements.boardTab.setAttribute("aria-selected", String(state.view === "board"));
+        elements.scoreboardTab.classList.toggle("active", state.view === "scoreboard");
+        elements.scoreboardTab.setAttribute("aria-selected", String(state.view === "scoreboard"));
+        elements.shuffleButton.disabled = ended || won || locked;
+        elements.editTeamsButton.disabled = ended || won || locked;
+        elements.restartButton.disabled = locked;
+        elements.endButton.disabled = ended || won || locked;
+        if (selecting) renderSelector();
+        renderRoster();
+        renderBoard();
+        renderScoreboard();
+      }
+
+      function moveCard(offset) {
+        if (!state || state.phase !== "reveal") return;
+        const hand = state.players[state.activePlayer].hand;
+        state.selectedCard = (state.selectedCard + offset + hand.length) % hand.length;
+        state.pendingMove = null;
+        renderGame();
+      }
+
+      function playSelectedCard() {
+        if (!state || state.phase !== "reveal" || locked || state.pendingMove === null) return;
+        const player = state.players[state.activePlayer];
+        const [played] = player.hand.splice(state.selectedCard, 1);
+        const placedIndex = state.pendingMove;
+        if (played.jackType === "REMOVE") {
+          state.board[placedIndex].tokenTeamId = null;
+        } else {
+          state.board[placedIndex].tokenTeamId = player.teamId;
+        }
+        state.discard.push(played);
+        if (state.deck.length === 0) {
+          state.deck = shuffle(state.discard.splice(0));
+          showToast("Draw deck empty. Discards shuffled back into the deck.");
+        }
+        player.hand.push(state.deck.pop());
+        if (state.deck.length === 0 && state.discard.length > 0) {
+          state.deck = shuffle(state.discard.splice(0));
+          showToast("Draw deck empty. Discards shuffled back into the deck.");
+        }
+        const completed = played.jackType === "REMOVE" ? 0 : completeSequences(player.teamId, placedIndex);
+        expectedPlayer = (state.activePlayer + 1) % state.players.length;
+        state.pendingMove = null;
+        state.activePlayer = null;
+        state.selectedCard = 0;
+        state.phase = state.winnerTeamId ? "won" : "select";
+        assertDeckIntegrity();
+        if (completed) {
+          const team = state.teams.find((item) => item.id === player.teamId);
+          showToast(`${team.name} completed ${completed} sequence${completed === 1 ? "" : "s"}.`);
+        }
+        renderGame();
+      }
+
+      function discardDeadCard() {
+        if (!state || state.phase !== "reveal" || locked || legalMovesForActiveCard().length) return;
+        const player = state.players[state.activePlayer];
+        const [played] = player.hand.splice(state.selectedCard, 1);
+        state.discard.push(played);
+        if (state.deck.length === 0) {
+          state.deck = shuffle(state.discard.splice(0));
+          showToast("Draw deck empty. Discards shuffled back into the deck.");
+        }
+        player.hand.push(state.deck.pop());
+        if (state.deck.length === 0 && state.discard.length > 0) {
+          state.deck = shuffle(state.discard.splice(0));
+          showToast("Draw deck empty. Discards shuffled back into the deck.");
+        }
+        expectedPlayer = (state.activePlayer + 1) % state.players.length;
+        state.pendingMove = null;
+        state.activePlayer = null;
+        state.selectedCard = 0;
+        state.phase = "select";
+        assertDeckIntegrity();
+        renderGame();
+      }
+
+      function switchPlayer() {
+        if (!state || state.phase !== "reveal" || locked) return;
+        expectedPlayer = (state.activePlayer + 1) % state.players.length;
+        state.pendingMove = null;
+        setPhase("select");
+      }
+
+      function manualShuffle() {
+        if (!state || state.phase === "ended" || locked) return;
+        state.deck = shuffle([...state.deck, ...state.discard]);
+        state.discard = [];
+        assertDeckIntegrity();
+        renderGame();
+        beginShuffleAnimation("SHUFFLING DECK...", "Mixing the draw and discard piles", () => {
+          renderGame();
+          showToast("Deck shuffled. Every player's hand is unchanged.");
+        });
+      }
+
+      elements.addPlayer.addEventListener("click", () => {
+        if (playerNames.length >= 12) return;
+        playerNames.push("");
+        renderSetupPlayers();
+        elements.playerList.lastElementChild?.querySelector("input")?.focus();
+      });
+      elements.setupForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const problem = validateSetup();
+        elements.setupError.textContent = problem;
+        if (problem) return;
+        openTeamSetup(playerNames.map((name) => name.trim()), handSizeFor(playerNames.length));
+      });
+      elements.teamCount.addEventListener("change", () => {
+        if (!teamDraft) return;
+        const count = Number(elements.teamCount.value);
+        teamDraft.teams = TEAM_PRESETS.slice(0, count).map((preset) =>
+          teamDraft.teams.find((team) => team.id === preset.id) ?? { ...preset },
+        );
+        teamDraft.assignments = teamDraft.assignments.map((teamId) =>
+          teamDraft.teams.some((team) => team.id === teamId) ? teamId : null,
+        );
+        renderTeamSetup();
+      });
+      elements.confirmTeams.addEventListener("click", () => {
+        if (!teamDraft || teamDraft.assignments.some((teamId) => !teamId)) return;
+        if (teamDraft.teams.some((team) => !team.name.trim())) {
+          elements.teamError.textContent = "Enter a name for every team before dealing.";
+          return;
+        }
+        const confirmed = teamDraft;
+        startGame(confirmed.players.map((player) => player.name), confirmed.handSize, confirmed.teams, confirmed.assignments);
+        teamDraft = null;
+      });
+      elements.backToPlayers.addEventListener("click", () => {
+        if (!teamDraft) return;
+        playerNames = teamDraft.players.map((player) => player.name);
+        elements.teamsScreen.hidden = true;
+        elements.setupScreen.hidden = false;
+        renderSetupPlayers();
+      });
+      elements.customHandSize.addEventListener("input", () => {
+        const max = Number(elements.customHandSize.max);
+        const value = Number(elements.customHandSize.value);
+        if (value > max) elements.customHandSize.value = String(max);
+      });
+      elements.previousCard.addEventListener("click", () => moveCard(-1));
+      elements.nextCard.addEventListener("click", () => moveCard(1));
+      elements.playedButton.addEventListener("click", playSelectedCard);
+      elements.deadCardButton.addEventListener("click", discardDeadCard);
+      elements.switchButton.addEventListener("click", switchPlayer);
+      elements.shuffleButton.addEventListener("click", manualShuffle);
+      elements.boardTab.addEventListener("click", () => { state.view = "board"; renderGame(); });
+      elements.scoreboardTab.addEventListener("click", () => { state.view = "scoreboard"; renderGame(); });
+      elements.editTeamsButton.addEventListener("click", openTeamEditor);
+      elements.cancelTeamEdit.addEventListener("click", () => closeTeamEditor(false));
+      elements.saveTeamEdit.addEventListener("click", () => closeTeamEditor(true));
+      elements.teamEditor.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        closeTeamEditor(false);
+      });
+      elements.restartButton.addEventListener("click", () => {
+        startGame(playerNames, state.handSize, state.teams, state.players.map((player) => player.teamId));
+      });
+      elements.endButton.addEventListener("click", () => {
+        if (!state || state.phase === "ended" || state.phase === "won") return;
+        state.players.forEach((player) => { player.hand = []; });
+        state.deck = [];
+        state.discard = [];
+        state.phase = "ended";
+        state.activePlayer = null;
+        state.view = "board";
+        renderGame();
+      });
+      elements.newGameButton.addEventListener("click", () => {
+        state = null;
+        teamDraft = null;
+        elements.gameScreen.hidden = true;
+        elements.teamsScreen.hidden = true;
+        elements.setupScreen.hidden = false;
+        elements.setupError.textContent = "";
+        renderSetupPlayers();
+      });
+
+      renderSetupPlayers();
+    })();
+  </script>
+</body>
+</html>
